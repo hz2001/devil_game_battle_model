@@ -140,8 +140,19 @@ class battle:
                 elif self.board[row][col] is None and \
                     [row,col] == chessToBeMoved.position and \
                     'summoned' in chessToBeMoved.statusDict.keys():
+<<<<<<< HEAD
                     # 说明有棋子被召唤需要更新棋盘
                     showNewBoard = True
+=======
+                    showNewBoard = True
+                    # print(self.board[row][col])
+                    # print(chessToBeMoved)
+                    # print(currentPosition)
+                    # print(chessToBeMoved.position)
+                    # self.add_chess_to_board(chessToBeAdded=chessToBeMoved)
+                    # 说明有棋子被召唤需要更新棋盘
+                    # self.board_print()
+>>>>>>> 3a644e2387e008e7c11803c4884de770a241fdbb
                     break
 
         if currentPosition != [-1,-1] and showNewBoard:
@@ -149,8 +160,12 @@ class battle:
             self.add_chess_to_board(chessToBeAdded=chessToBeMoved)
         else:
             # 棋子死掉了，不重新添加棋子
+            showNewBoard = False
             pass
         if showNewBoard:
+            # print(chessToBeMoved)
+            # print(currentPosition)
+            # print(chessToBeMoved.position)
             self.board_print()
             pass
 
