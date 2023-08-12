@@ -4,6 +4,7 @@ from statusInterface import statusInterface
 from termcolor import colored
 from copy import deepcopy
 from math import dist, floor
+from queue import Queue
 
 class chessInterface:
     
@@ -98,6 +99,15 @@ class chessInterface:
             allChessDict (dict[int, chessInterface]): _description_
         """
         self.allChessDict = allChessDict
+
+    def can_move(self) -> bool:
+        '''判定棋子是否可以移动'''
+        if self.statusDict['stunned'] is None and \
+            self.statusDict['hexed'] is None and \
+            self.statusDict['taunted'] is None and \
+            not self.isDead:
+            return True
+        return False
 
     def can_attack(self) -> bool:
         '''判定棋子是否可以攻击, attack_interval 100 = 1 秒'''
@@ -251,8 +261,40 @@ class chessInterface:
                     surrounding.append([row, col])
         return surrounding
 
-    def opponent_distances(self) -> dict[float, chessInterface]:
+    def opponent_ids(self) -> list[int]:
         '''返回所有对方棋子的距离和chess的 dict'''
+        return [uniqueID for (uniqueID,chess) in self.allChessDict.items() if chess.team != self.team]
+
+    def opponent_distances(self) -> dict[float, chessInterface]:
+        '''返回所有对方棋子的直线距离和chess的 dict'''
+        return {abs(dist(self.position,
+                                chess.position)):chess
+                for (uniqueID,chess) in self.allChessDict.items()
+                if chess.team != self.team}
+    
+    def opponent_step_distances(self,board:list[list[chessInterface]]) -> dict[int, chessInterface]:
+        '''返回所有对方棋子的路径距离和chess的 dict'''
+        distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
+        def bfs(step:int, curr_pos:list[int]):
+            '''
+            distance: 棋子距离矩阵
+            step: 步数
+            curr_pos: 当前棋子位置
+            '''
+            try:
+                if board[curr_pos[0]][curr_pos[1]] is None or step == 0:
+                    if distance[curr_pos[0]][curr_pos[1]] > step:
+                        # print(distance[curr_pos[0]][curr_pos[1]])
+                        distance[curr_pos[0]][curr_pos[1]] = step
+                        # print(distance[curr_pos[0]][curr_pos[1]])
+                        # distance_print(distance)
+                        bfs(step + 1, [curr_pos[0],curr_pos[1]-1]) # 上
+                        bfs(step + 1, [curr_pos[0],curr_pos[1]+1]) # 下
+                        bfs(step + 1, [curr_pos[0]-1,curr_pos[1]]) # 左
+                        bfs(step + 1, [curr_pos[0]+1,curr_pos[1]]) # 右
+            except IndexError:
+                pass
+        bfs(0,self.position)
         return {abs(dist(self.position,
                                 chess.position)):chess
                 for (uniqueID,chess) in self.allChessDict.items()
@@ -267,6 +309,68 @@ class chessInterface:
         # print(self,nearest,opponents_distances)
         chessToBeAttacked = opponents_distances[nearest]
         return chessToBeAttacked
+    
+
+    def move(self,board:list[list[chessInterface]])->chessInterface:
+        # distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
+        # def bfs(step:int, curr_pos:list[int]):
+        #     '''
+        #     distance: 棋子距离矩阵
+        #     step: 步数
+        #     curr_pos: 当前棋子位置
+        #     '''
+        #     try:
+        #         if board[curr_pos[0]][curr_pos[1]] is None or step == 0:
+        #             if distance[curr_pos[0]][curr_pos[1]] > step:
+        #                 distance[curr_pos[0]][curr_pos[1]] = step
+        #                 bfs(step + 1, [curr_pos[0],curr_pos[1]-1]) # 上
+        #                 bfs(step + 1, [curr_pos[0],curr_pos[1]+1]) # 下
+        #                 bfs(step + 1, [curr_pos[0]-1,curr_pos[1]]) # 左
+        #                 bfs(step + 1, [curr_pos[0]+1,curr_pos[1]]) # 右
+        #     except IndexError:
+        #         pass
+        # bfs(0,self.position)
+        def bfs_queue(source_pos:list[int]):
+            distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
+
+            queue = Queue()
+            # queue.put({'step':0,'pos':source_pos,'direction':'origin'})
+            queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上
+            queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
+            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
+            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
+
+            while queue:
+                try:
+                    curr = queue.get()
+                    step = curr['step']
+                    curr_pos = curr['pos']
+                    if curr_pos[0] < 0 or curr_pos[1] < 0:
+                        # raise IndexError(f"Index is out of range")
+                        continue
+                    chess = board[curr_pos[0]][curr_pos[1]]
+                    direction = curr['direction']
+                    if chess is None: # path reached another chess
+                        if distance[curr_pos[0]][curr_pos[1]] > step:
+                            distance[curr_pos[0]][curr_pos[1]] = step
+                            queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
+                            queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
+                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
+                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
+                    elif chess.team != self.team: # found the closest opponent chess
+                        return {'target_distance':step, 'target_position':curr_pos, 'target':chess, 'direction':direction}
+                except IndexError:
+                    # raise
+                    pass
+            return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
+        # print('chess:',self)
+        # print('\n'.join([f"{key}: {value}" for key, value in bfs_queue(self.position).items()]))
+        # print('\n')
+        return bfs_queue(self.position)
+
+    
+
+
 
     def find_attack_target(self, placesAvailable: list[list[int]]):
         # sort the targets in the order of distance to the attacker(or other restrains), 
@@ -323,4 +427,24 @@ class chessInterface:
     #         else:
     #             opponentOutOfAttackRange[distanceToOpponent] = chess
 
-    
+    def move_to(self,
+            direction: str,
+            currentTime: int,
+            coefficient: float = 1.0) -> None:
+        """在棋子需要攻击的时候调用这个方法，这个方法会计算伤害，调用 deal_damage_to()方法造成伤害,并且打印attack info。
+
+        Args:
+            opponent (chessInterface): _description_
+            currentTime (int): _description_
+            coefficient (float, optional): _description_. Defaults to 1.0.
+        """
+        # damage = self.calculate_attack_damage(attack = self.attack*coefficient, opponent=opponent)
+        self.print_move_info(direction,currentTime)
+        # self.deal_damage_to(opponent=opponent,
+        #                     damage= damage,
+        #                     currentTime=currentTime)
+        # self.attack_counter = 0
+
+    def print_move_info(self,direction: str, currentTime: int):
+        # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 
+        print(currentTime/100,f"<{self}>向<{direction}> 移动了一格") 

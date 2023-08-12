@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 #  目标是计算出自走棋一回合的时间是多少
 
 from math import dist, ceil, floor
@@ -210,7 +211,9 @@ class battle:
                 if attackerChess.can_attack(): # 攻击判定
                     opponent = attackerChess.get_hate_mechanism()
                     attackerChess.do_attack(currentTime=current_time, opponent=opponent)
-
+                if attackerChess.can_move(): # 攻击判定
+                    action = attackerChess.move(self.board)
+                    attackerChess.move_to(action['direction'],currentTime=current_time)
         if self.teamAlive(self.redTeamDict):
             print(f"{colored('红','red')}方获胜!")
         else:
