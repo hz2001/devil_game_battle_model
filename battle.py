@@ -137,6 +137,12 @@ class battle:
                     # print(self.board[row][col])
                     # print(currentPosition)
                     break
+                elif self.board[row][col] is not None and \
+                    'summoned' in self.board[row][col].statusDict.keys():
+                    # 说明有棋子被召唤需要更新棋盘
+                    self.board_print()
+                    break
+
         if currentPosition != [-1,-1] and showNewBoard:
             # 说明棋子没死，从新把棋子添加回棋盘
             self.add_chess_to_board(chessToBeAdded=chessToBeMoved)
@@ -259,15 +265,8 @@ def main():
     
     newBattle = battle()
     redTeam = [ant(position=[0,0]), 
-               ant(position =[1,0]), 
-               ant(position =[1,1]), 
-               ant(position =[1,2]), 
-               ant(position =[1,3]), 
-               ant(position =[1,4])]
-    blueTeam = [sea_hedgehog(position = [3,2]), 
-                sea_hedgehog(position=[5,4]), 
-                sea_hedgehog(position=[3,4]), 
-                sea_hedgehog(position=[4,4])]
+               wolf(position =[1,0])]
+    blueTeam = [hippo(position=[3,1]),ladybug(position=[4,4])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()
