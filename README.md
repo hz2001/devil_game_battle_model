@@ -44,16 +44,18 @@ python3 battle.py
    
 #### 1. 战斗主体模块
 主要作用：这个模块集合了其余三大模块，其主要作用是模拟玩家的游玩环境，并且进行战斗的循环（对于棋子的判定）。在这个部分里，玩家可以选择上场的棋子，它们的数量，以及摆放的位置。
+
 主要方法：
-addRedTeam() \n
-addBlueTeam() \n
+
+addRedTeam(teamList)   
+addBlueTeam(teamList)   
 这两个方法的作用是将棋子list导入在棋盘中，输入为 一个棋子list, list里面必须是 chessInterface 及其子类。填入妻子的时候需要用 
 ```
 [ant(position=[0,0]), ant(position=[0,1]),ant(position=[0,2]),ant(position=[0,2]),ant(position=[0,2])]
 ```
-这种格式来填写。\n
+这种格式来填写。   
 
-board_print() \n
+board_print()    
 这个方法的作用是打印当前的棋盘，不需要任何输入值。
 
 battle_with_skills()
