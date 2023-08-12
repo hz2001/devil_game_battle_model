@@ -264,7 +264,10 @@ def main():
                ant(position =[1,2]), 
                ant(position =[1,3]), 
                ant(position =[1,4])]
-    blueTeam = [sea_hedgehog(position = [3,2]), sea_hedgehog(position=[5,4]), sea_hedgehog(position=[3,4]), sea_hedgehog(position=[4,4])]
+    blueTeam = [sea_hedgehog(position = [3,2]), 
+                sea_hedgehog(position=[5,4]), 
+                sea_hedgehog(position=[3,4]), 
+                sea_hedgehog(position=[4,4])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()

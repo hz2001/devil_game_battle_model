@@ -295,6 +295,23 @@ class sand_poisoned(statusInterface):
 # 1星卡
 ############################################################################################################
 # 兔子
+class spit(skillInterface):
+    # spit saliva 
+    def __init__(self) -> None:
+        super().__init__(skillName = "吐口水",
+                         cd = 0.1,
+                         type = "active",
+                         description= f"吐口水,变得快乐")
+        self.duration = 0
+    
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
+        targetList = []
+        for (uniqueID, chess) in caster.allChessDict.items():
+            if chess.team != caster.team:
+                targetList.append(chess)
+        target = targetList[randint(0, len(targetList))] 
+        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}心情很差")
+  
 class rabbit(chessInterface):
     def __init__(self,position= [3,3]):
         super().__init__(chessName = "兔子",
@@ -316,6 +333,35 @@ class rabbit(chessInterface):
         chessInterface.uniqueID += 1
 ############################################################################################################
 # 蚂蚁
+# 技能：三个臭皮匠
+class threeStinkers(skillInterface):
+    # spit saliva 
+    def __init__(self) -> None:
+        super().__init__(skillName = "三个臭皮匠",
+                         cd = 0,
+                         type = "active",
+                         description= f"人多尼酿大")
+        # self.duration = 0
+    
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
+        if target.statusDict['broken'] is None:
+            ant_count = len({id: chess for id, chess in target.teamDict.items() if chess.id == 2})
+            target.attack = 20 * ant_count
+            # target.attack_interval = 1.0 / ant_count
+            target.attack_range = 1 * ant_count
+            target.armor = 12 * ant_count
+            target.health = target.health / target.maxHP * 180 * ant_count
+            target.maxHP = 180 * ant_count
+            # print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}超进化了")
+        else:
+            target.attack = 20
+            # target.attack_interval = 1.0
+            target.attack_range = 1
+            target.armor = 12
+            target.health = target.health / target.maxHP * 180
+            target.maxHP = 180
+            print(f"{currentTime/100}   {target}收到了破坏,{target}被打回了原形")
+
 class ant(chessInterface):
     def __init__(self,position= [3,3]):
         super().__init__(chessName = "蚂蚁",
@@ -323,7 +369,7 @@ class ant(chessInterface):
                          race = "insect",
                          star = 1,
                          attack = 20,
-                         attack_interval=1.0,
+                         attack_interval = 1,
                          attack_range = 1,
                          armor=12,
                          health=180,
@@ -335,6 +381,14 @@ class ant(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        self.skill = threeStinkers()
+
+    def cast(self,currentTime: int):
+        ''' bigger
+        '''
+        self.skill.cast(currentTime,caster = self,target=self)
+        # super().cast(implemented = True)
+
 ############################################################################################################
 # 小丑鱼
 class littleUglyFish(chessInterface):
