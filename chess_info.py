@@ -422,7 +422,7 @@ class summonWolfMinions(skillInterface):
 
     def cast(self, currentTime: int, caster: chessInterface, target=None):
         '''在合适的位置召唤狼兵'''
-        print(f"{currentTime/100}   {caster}used{self}")
+        print(f"{currentTime/100}   {caster}使用了{self}")
         placeTaken = [caster.position]
         for (id, chess) in caster.allChessDict.items():
             placeTaken.append(chess.position)
@@ -439,12 +439,20 @@ class summonWolfMinions(skillInterface):
                     bestPlace = [row,col]
         if bestPlace is not None:
             # 棋盘没满,召唤小狼1
-            wolfMinion1 = wolfMinion(position=bestPlace)
+            wolfMinion1 = wolfMinion(position=bestPlace,
+                                     currentTime=currentTime,
+                                     allChessDict=caster.allChessDict,
+                                     teamDict = caster.teamDict)
+            caster.teamDict[wolfMinion1.id] = wolfMinion1
             caster.allChessDict[wolfMinion1.id] = wolfMinion1
         if secondPlace is not None:
             # 棋盘没满,召唤小狼2
-            wolfMinion2 = wolfMinion(position=secondPlace)
-            caster.allChessDict[wolfMinion2.id] = wolfMinion2
+            wolfMinion2 = wolfMinion(position=secondPlace,
+                                     currentTime=currentTime,
+                                     allChessDict=caster.allChessDict,
+                                     teamDict=caster.teamDict)
+            caster.teamDict[wolfMinion2.uniqueID] = wolfMinion2
+            caster.allChessDict[wolfMinion2.uniqueID] = wolfMinion2
 # 狼
 class wolf(chessInterface):
     def __init__(self,position = [3,3], skill = summonWolfMinions()):
@@ -458,7 +466,6 @@ class wolf(chessInterface):
                          armor=21,
                          health=520,
                          skill = skill)
-        print(f"      {self}被召唤了!")
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -473,13 +480,21 @@ class wolf(chessInterface):
         return super().cast(currentTime=currentTime,implemented=True)
 
 class wolfMinion(wolf):
-    def __init__(self, position=[3, 3]):
-        super().__init__(position, skill = None, id=28)
+    def __init__(self, allChessDict, teamDict, currentTime:int, position=[3, 3]):
+        super().__init__(position, skill = None)
         self.chessName = "狼分身"
+        print(f"      {self}被召唤了!")
         self.attack = self.attack/3
         self.armor=self.armor/3
         self.health=self.health/3
-        self.statusDict['summoned'] = summoned(10)
+        self.maxHP = deepcopy(self.health)
+        self.statusDict['summoned'] = summoned(statusDuration=10,
+                                               currentTime=currentTime,
+                                               statusOwner=self)
+        self.id = 28
+        self.allChessDict = allChessDict
+        self.teamDict = teamDict
+        
 
 
 # insect
@@ -527,8 +542,8 @@ class ladybug(chessInterface):
 
     def cast(self, currentTime: int):
         # when casting, change the status of the owner
-        self.skill.cast(caster = self, target=self)
-        return super().cast(currentTime=currentTime,implemented=False)
+        self.skill.cast(caster = self, target=self, currentTime=currentTime)
+        return super().cast(implemented=True)
 
 
 ############################################################################################################
