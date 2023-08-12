@@ -266,7 +266,7 @@ def main():
     newBattle = battle()
     redTeam = [ant(position=[0,0]), 
                wolf(position =[1,0])]
-    blueTeam = [ladybug(position=[4,4])]
+    blueTeam = [hippo(position=[3,1]),ladybug(position=[4,4])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()

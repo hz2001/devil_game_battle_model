@@ -443,8 +443,8 @@ class summonWolfMinions(skillInterface):
                                      currentTime=currentTime,
                                      allChessDict=caster.allChessDict,
                                      teamDict = caster.teamDict)
-            caster.teamDict[wolfMinion1.id] = wolfMinion1
-            caster.allChessDict[wolfMinion1.id] = wolfMinion1
+            caster.teamDict[wolfMinion1.uniqueID] = wolfMinion1
+            caster.allChessDict[wolfMinion1.uniqueID] = wolfMinion1
         if secondPlace is not None:
             # 棋盘没满,召唤小狼2
             wolfMinion2 = wolfMinion(position=secondPlace,
