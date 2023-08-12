@@ -137,10 +137,11 @@ class battle:
                     # print(self.board[row][col])
                     # print(currentPosition)
                     break
-                elif self.board[row][col] is not None and \
-                    'summoned' in self.board[row][col].statusDict.keys():
+                elif self.board[row][col] is None and \
+                    [row,col] == chessToBeMoved.position and \
+                    'summoned' in chessToBeMoved.statusDict.keys():
                     # 说明有棋子被召唤需要更新棋盘
-                    self.board_print()
+                    showNewBoard = True
                     break
 
         if currentPosition != [-1,-1] and showNewBoard:
