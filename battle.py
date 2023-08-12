@@ -97,6 +97,7 @@ class battle:
 
     def board_print(self):
         '''打印当前棋盘'''
+        print()
         for row in self.board:
             print(f"{[chess for chess in row]}")
             print()
@@ -109,12 +110,14 @@ class battle:
                                 e.position))),uniqueID) for (uniqueID,e) in enemyDict.items()]
 
     # 位置判定
-    def update_chess_position_onboard(self, chessToBeMoved: chessInterface):
+    def update_chess_position_onboard(self, chessToBeMoved: chessInterface) -> None:
         '''
         棋盘更新方法
         在这个方法里不可以修改棋子本身的位置信息，而是根据现在棋子的位置属性更新棋盘，棋子位置的变更应该由棋子自身完成，而不是战斗功能完成
         '''
         currentPosition = chessToBeMoved.position
+        # print(chessToBeMoved)
+        # print(currentPosition)
         showNewBoard = False
         # if self.board[position[0]][position[1]] is None:
         # 不存在位置没有孔雀开屏的情况因为移动的时候已经判定过了，现在只是更新棋盘
@@ -124,8 +127,15 @@ class battle:
                 if self.board[row][col] is not None and \
                     self.board[row][col] == chessToBeMoved and \
                         [row, col] != chessToBeMoved.position: # means we need to remove
+                    # print(self.board[row][col])
+                    # print(chessToBeMoved)
+                    # print(currentPosition)
+                    # print(chessToBeMoved.position)
                     self.board[row][col] = None
                     showNewBoard = True
+                    # print()
+                    # print(self.board[row][col])
+                    # print(currentPosition)
                     break
         if currentPosition != [-1,-1] and showNewBoard:
             # 说明棋子没死，从新把棋子添加回棋盘
@@ -135,6 +145,7 @@ class battle:
             pass
         if showNewBoard:
             self.board_print()
+            pass
 
     def get_hate_mechanism(self,attacker:chessInterface) ->int:
         '''
@@ -192,7 +203,8 @@ class battle:
 
             for (attackerID, attackerChess) in self.allChessDict.copy().items():
                 if self.update_chess_position_onboard(chessToBeMoved=attackerChess):
-                    print(self.board_print())
+                    # print(self.board_print())
+                    pass
                 if attackerChess.isDead:
                     # print("*****attacker is Dead, something is wrong")
                     continue
@@ -213,7 +225,11 @@ class battle:
                     attackerChess.do_attack(currentTime=current_time, opponent=opponent)
                 if attackerChess.can_move(): # 攻击判定
                     action = attackerChess.move(self.board)
-                    attackerChess.move_to(action['direction'],currentTime=current_time)
+                    if action['target_distance'] is not None and action['target_distance'] > 1:
+                        attackerChess.statusDict['moving'] = moving(statusOwner=attackerChess, currentTime=current_time, newPosition=action['target_position'])
+                        attackerChess.move_to(action['direction'],currentTime=current_time)
+                        self.update_chess_position_onboard(chessToBeMoved=attackerChess)
+                        # self.board_print()
         if self.teamAlive(self.redTeamDict):
             print(f"{colored('红','red')}方获胜!")
         else:
@@ -242,8 +258,13 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [hippo(position=[2,2]), rabbit(position =[2,3]), heal_deer(position = [1,2]), scorpion(position=[2,4])]
-    blueTeam = [sea_hedgehog(position = [3,3]), bear(position=[3,4]), bee(position = [4,4]),mantis(position=[3,2])]
+    redTeam = [ant(position=[0,0]), 
+               ant(position =[1,0]), 
+               ant(position =[1,1]), 
+               ant(position =[1,2]), 
+               ant(position =[1,3]), 
+               ant(position =[1,4])]
+    blueTeam = [sea_hedgehog(position = [3,2]), sea_hedgehog(position=[5,4]), sea_hedgehog(position=[3,4]), sea_hedgehog(position=[4,4])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()

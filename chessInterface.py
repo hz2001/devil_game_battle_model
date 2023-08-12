@@ -4,7 +4,7 @@ from statusInterface import statusInterface
 from termcolor import colored
 from copy import deepcopy
 from math import dist, floor
-from queue import Queue
+from queue import Empty, Queue
 
 class chessInterface:
     
@@ -105,6 +105,7 @@ class chessInterface:
         if self.statusDict['stunned'] is None and \
             self.statusDict['hexed'] is None and \
             self.statusDict['taunted'] is None and \
+            self.statusDict['moving'] is None and \
             not self.isDead:
             return True
         return False
@@ -112,7 +113,13 @@ class chessInterface:
     def can_attack(self) -> bool:
         '''判定棋子是否可以攻击, attack_interval 100 = 1 秒'''
         # print("attack?",self.attack_counter, self.attack_interval )
-        return self.attack_counter >= self.attack_interval
+        # print(self)
+        if self.statusDict['stunned'] is None and \
+            self.statusDict['hexed'] is None and \
+            self.statusDict['silenced'] is None and \
+            self.statusDict['taunted'] is None and \
+            self.statusDict['moving'] is None:
+            return self.attack_counter >= self.attack_interval
 
     def can_cast(self) -> bool:
         ''' 判定棋子是否可以施法
@@ -125,7 +132,8 @@ class chessInterface:
             if self.statusDict['stunned'] is None and \
                 self.statusDict['hexed'] is None and \
                 self.statusDict['silenced'] is None and \
-                self.statusDict['taunted'] is None:
+                self.statusDict['taunted'] is None and \
+                self.statusDict['moving'] is None:
                 return self.cd_counter >= int(self.skill.cd * 100) # 如果计数器满了，就判定为可以施放技能
         else:
             if self.statusDict['broken'] is None:
@@ -137,6 +145,7 @@ class chessInterface:
         '''如果激活条件满足，就触发状态效果'''
         for (statusID, status) in self.statusDict.items():
             if status is not None:
+                # print(self,status)
                 status.activate(currentTime=currentTime)
 
     def cast(self, currentTime:int=0, implemented: bool = False):
@@ -244,7 +253,7 @@ class chessInterface:
         在棋子需要移动的时候调用这个方法
         '''
         self.position = newPosition
-        self.statusDict['move'].activate(currentTime=currentTime, position = newPosition)
+        self.statusDict['moving'].activate(currentTime=currentTime)
 
     def get_surrounding(self, searchingRange:int = 1) -> list[list[int]]:
         '''
@@ -311,7 +320,7 @@ class chessInterface:
         return chessToBeAttacked
     
 
-    def move(self,board:list[list[chessInterface]])->chessInterface:
+    def move(self,board:list[list[chessInterface]])->dict[str, any]:
         # distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
         # def bfs(step:int, curr_pos:list[int]):
         #     '''
@@ -334,21 +343,32 @@ class chessInterface:
             distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
 
             queue = Queue()
+            # print(queue)
             # queue.put({'step':0,'pos':source_pos,'direction':'origin'})
             queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上
             queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
             queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
             queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
 
-            while queue:
+            while queue.not_empty:
                 try:
-                    curr = queue.get()
+                    curr = queue.get_nowait()
+                    # print(self,curr)
+                    # print('1')
                     step = curr['step']
+                    # print('2')
                     curr_pos = curr['pos']
+                    # print('3')
                     if curr_pos[0] < 0 or curr_pos[1] < 0:
                         # raise IndexError(f"Index is out of range")
                         continue
+                    # print('44')
+                    # print(curr_pos[0])
+                    # print(curr_pos[1])
+                    # print(board[curr_pos[0]][curr_pos[1]])
+                    # print(board)
                     chess = board[curr_pos[0]][curr_pos[1]]
+                    # print('5')
                     direction = curr['direction']
                     if chess is None: # path reached another chess
                         if distance[curr_pos[0]][curr_pos[1]] > step:
@@ -359,9 +379,14 @@ class chessInterface:
                             queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
                     elif chess.team != self.team: # found the closest opponent chess
                         return {'target_distance':step, 'target_position':curr_pos, 'target':chess, 'direction':direction}
+                    # print('6')
                 except IndexError:
+                    # print("7")
                     # raise
-                    pass
+                    continue
+                except Empty:
+                    return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
+            # print(queue)
             return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
         # print('chess:',self)
         # print('\n'.join([f"{key}: {value}" for key, value in bfs_queue(self.position).items()]))
@@ -438,6 +463,14 @@ class chessInterface:
             currentTime (int): _description_
             coefficient (float, optional): _description_. Defaults to 1.0.
         """
+        new_pos = {
+            'up':lambda x,y: [x-1,y],
+            'down':lambda x,y: [x+1,y],
+            'left':lambda x,y: [x,y-1],
+            'right':lambda x,y: [x,y+1]
+        }
+        self.moveChessTo(currentTime=currentTime,newPosition=new_pos[direction](self.position[0],self.position[1]))
+        # distanceToOpponent = self.calculate_distance_to_opponent
         # damage = self.calculate_attack_damage(attack = self.attack*coefficient, opponent=opponent)
         self.print_move_info(direction,currentTime)
         # self.deal_damage_to(opponent=opponent,

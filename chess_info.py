@@ -307,7 +307,7 @@ class rabbit(chessInterface):
                          armor=9,
                          health=318,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -315,6 +315,7 @@ class rabbit(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 ############################################################################################################
+# 蚂蚁
 class ant(chessInterface):
     def __init__(self,position= [3,3]):
         super().__init__(chessName = "蚂蚁",
@@ -327,7 +328,7 @@ class ant(chessInterface):
                          armor=12,
                          health=180,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -335,6 +336,7 @@ class ant(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 ############################################################################################################
+# 小丑鱼
 class littleUglyFish(chessInterface):
     def __init__(self,position= [3,3]):
         super().__init__(chessName = "小丑鱼",
@@ -347,7 +349,7 @@ class littleUglyFish(chessInterface):
                          armor=13,
                          health=216,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -358,6 +360,7 @@ class littleUglyFish(chessInterface):
 # 2星卡
 # mammal
 ############################################################################################################
+# 羊驼
 class hex(skillInterface):
     # turn an enemy into a sheep for x seconds
     def __init__(self, duration = 2) -> None:
@@ -389,7 +392,7 @@ class llama(chessInterface):
                          armor=13,
                          health=410,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -456,7 +459,7 @@ class wolf(chessInterface):
                          health=520,
                          skill = skill)
         print(f"      {self}被召唤了!")
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -514,7 +517,7 @@ class ladybug(chessInterface):
                          armor=25,
                          health=478,
                          skill = transformation()) # 之前太强了，削弱一些
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -563,7 +566,7 @@ class bee(chessInterface):
                          armor=20,
                          health=380,
                          skill = going_honey())
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -606,7 +609,7 @@ class swallower(chessInterface):
                          armor=20,
                          health=380,
                          skill = skill)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -657,7 +660,7 @@ class sea_hedgehog(chessInterface):
                          armor=3,
                          health=800,
                          skill = dispersion_skill())
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,
@@ -712,7 +715,7 @@ class heal_deer(chessInterface):
                          health=830,
                          skill = None)
         self.skill = skill
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -739,7 +742,7 @@ class monkey(chessInterface):
                          armor = 17,
                          health= 288,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -769,7 +772,7 @@ class hippo(chessInterface):
                          armor = 91,
                          health= 1250,
                          skill = antiInsect())
-        self.statusDict ={
+        self.statusDict ={'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -810,7 +813,7 @@ class bear(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -835,7 +838,7 @@ class butterfly(chessInterface):
                          armor = 27,
                          health= 518,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -878,7 +881,7 @@ class fireworm(chessInterface):
                          armor = 30,
                          health= 650,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -913,7 +916,7 @@ class mantis(chessInterface):
                          armor = 78,
                          health= 270,
                          skill = skill )
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -968,7 +971,7 @@ class scorpion(chessInterface):
                          armor = 32,
                          health= 840,
                          skill = skill)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1016,7 +1019,7 @@ class anglerfish(chessInterface):
                          armor = 23,
                          health= 470,
                          skill = deathBeam(castRange=3, baseDamage=300, ceilingDamage=600))
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1025,7 +1028,7 @@ class anglerfish(chessInterface):
         chessInterface.uniqueID += 1
     
     def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime,caster= self)
+        self.skill.cast(currentTime=currentTime,caster= self,target=None)
         return super().cast(implemented = True)
 
 ############################################################################################################
@@ -1040,7 +1043,7 @@ class electric_eel(chessInterface):
                          armor = 23,
                          health= 560,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1060,7 +1063,7 @@ class crab(chessInterface):
                          armor = 35,
                          health= 880,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1080,7 +1083,7 @@ class monoceros(chessInterface):
                          armor = 27,
                          health= 680,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1100,7 +1103,7 @@ class turtle(chessInterface):
                          armor = 81,
                          health= 750,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1123,7 +1126,7 @@ class elephant(chessInterface):
                          armor = 65,
                          health= 1600,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1143,7 +1146,7 @@ class tiger(chessInterface):
                          armor = 43,
                          health= 1040,# 有点低
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1164,7 +1167,7 @@ class unicorn_b(chessInterface):
                          armor = 26,
                          health= 560,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1216,7 +1219,7 @@ class spider(chessInterface):
                          armor = 65,
                          health= 1270,
                          skill = ensnarement())
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1241,7 +1244,7 @@ class octpus(chessInterface):
                          armor = 42,
                          health= 1550,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
@@ -1283,7 +1286,7 @@ class shark(chessInterface):
                          armor = 60,
                          health= 1200,
                          skill = None)
-        self.statusDict = {'move': None,
+        self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
