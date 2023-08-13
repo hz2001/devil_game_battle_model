@@ -109,6 +109,10 @@ class chessInterface:
             not self.isDead:
             return True
         return False
+    
+    def enemy_in_attack_range(self) -> bool:
+        return sorted(self.opponent_distances())[0] <= self.attack_range
+
 
     def can_attack(self) -> bool:
         '''判定棋子是否可以攻击, attack_interval 100 = 1 秒'''
@@ -119,6 +123,9 @@ class chessInterface:
             self.statusDict['silenced'] is None and \
             self.statusDict['taunted'] is None and \
             self.statusDict['moving'] is None:
+            # print(self,'closest enemy distance',sorted(self.opponent_distances())[0])
+            # print(self,'attack range',self.attack_range)
+            # if sorted(self.opponent_distances())[0] <= self.attack_range:
             return self.attack_counter >= self.attack_interval
 
     def can_cast(self) -> bool:

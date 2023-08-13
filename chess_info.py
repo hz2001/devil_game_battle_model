@@ -39,7 +39,7 @@ class moving(statusInterface):
             self.statusOwner.statusDict['moving'] = None
             return False
         else:
-            # 仍然被羊，跳过 本次攻击/移动判定
+            # 移动，跳过 本次攻击/移动判定
             self.statusOwner.attack_counter = 0
             return True
 # 变羊
