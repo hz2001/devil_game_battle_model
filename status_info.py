@@ -1,7 +1,7 @@
 from termcolor import colored
 from chessInterface import chessInterface
 from statusInterface import statusInterface
-
+from copy import deepcopy
 from chess_info import *
 
 statusDictExample= {
@@ -242,13 +242,13 @@ class sand_poisoned(statusInterface):
     def __init__(self,
                  currentTime: int,
                  statusOwner: chessInterface,
+                 caster: scorpion,
                  damageInterval: int = 100 # 秒 * 100， 以防用float 不能用% 来判定
                  ) -> None:
         super().__init__(statusName = "沙漠剧毒",
                          currentTime = currentTime,
                          statusDuration=5.0,
                          statusType="damage")
-        self.caster = scorpion
         self.damageInterval = damageInterval
         self.statusOwner = statusOwner
         self.damage = caster.skill.damage

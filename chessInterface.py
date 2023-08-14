@@ -324,7 +324,7 @@ class chessInterface:
 
     def get_hate_mechanism(self)-> chessInterface:
         '''
-        这个方法意在找到当前棋子的下一个攻击对象
+        这个方法意在找到当前棋子的下一个攻击对象,判定方式是直线距离
         '''
         opponents_distances = self.opponent_distances()
         nearest = sorted(opponents_distances)[0]
@@ -380,75 +380,12 @@ class chessInterface:
             return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
         return bfs_queue(self.position)
 
-    
-
-
-
-    def find_attack_target(self, placesAvailable: list[list[int]]):
-        # sort the targets in the order of distance to the attacker(or other restrains), 
-        # find the position ranking where it can attack each target
-        # compare to find the best among this ranking #TODO: optimize this algorithm
-        target = None
-        goodPlaces = {}
-        opponentDistances: dict[float, chessInterface] = self.opponent_distances()
-        # sort the target in distances:
-        opponentDistances = sorted(opponentDistances, key = opponentDistances.keys())
-        # find the position where self can attack each of them
-        for distance,opponent in opponentDistances.items():
-            for position in placesAvailable:
-                if (position in opponent.get_surrounding(self.attack_range)) and (position not in goodPlaces.keys()): # 在这些格子中攻击者都可以打到被攻击者
-                    goodPlaces[position] = opponent # 因为position not in goodPlaces.keys()， 说明这个position 没有更好的可攻击对象，我们也就可以改变其键值对
-        goodPlaces = sorted(goodPlaces,key = goodPlaces.keys()) # 按照 distance 给这些格子排序
-        # 按照这个顺序检查最短路径，并且返回这个路径 TODO
-        for (distance, opponent) in goodPlaces:
-            self.find_path(opponent)
-        
-        for position in placesAvailable:
-            distance = dist([position[0],position[1]], self.position)
-            if distance < shortest and distance < self.attack_range:
-                # find the position to move, as close as possible to the owner
-                shortest = distance
-                bestPlace = [position[0],position[1]]
-        return bestPlace, target
-
-    # def find_position_to_move(self, considerAttack = True, ConsiderSpell = True) -> list[int]:
-    #     '''返回一个最好的可以移动的位置 （现在没考虑能被卡住的情况 和多次走的情况，也就是说现在是直接走到下一个合适位置，而没有中间过程） TODO
-    #     '''
-    #     opponentDistances = self.opponent_distances()
-
-    #     position_to_move_for_attack, target = self.find_attack_target(target)
-    #     # 就近原则
-
-    #     find_skill_target()# 找到合适的施法对象并且移动到施法距离之内 （什么是合适的施法格：施法单位和施法者的距离等于两者距离，并且施法格离施法者的距离（移动距离）最近）
-    #     # 如果施法范围内有敌方单位，那么就对其施法，否则，就需要移动
-    #     placeAvailable = []
-    #     for i in range(6):
-    #         for j in range(5):
-    #             placeAvailable.append([i,j])
-    #     placeTaken = [self.position]
-    #     opponentCanBeAttacked = {}
-    #     opponentOutOfAttackRange = {}
-    #     bestPlace = None
-
-    #     for (uniqueID, chess) in self.allChessDict.items():
-    #         placeTaken.append(chess.position)
-    #         placeAvailable.remove(chess.position)
-    #         distanceToOpponent = dist(chess.position, self.position)
-    #         if distanceToOpponent < self.attack_range:
-    #             opponentCanBeAttacked[distanceToOpponent] = chess
-    #         else:
-    #             opponentOutOfAttackRange[distanceToOpponent] = chess
 
     def move_to(self,
             direction: str,
             currentTime: int,
             coefficient: float = 1.0) -> None:
-        """在棋子需要攻击的时候调用这个方法，这个方法会计算伤害，调用 deal_damage_to()方法造成伤害,并且打印attack info。
-
-        Args:
-            opponent (chessInterface): _description_
-            currentTime (int): _description_
-            coefficient (float, optional): _description_. Defaults to 1.0.
+        """在棋子需要攻击的时候调用这个方法
         """
         new_pos = {
             'up':lambda x,y: [x-1,y],
@@ -457,13 +394,8 @@ class chessInterface:
             'right':lambda x,y: [x,y+1]
         }
         self.moveChessTo(currentTime=currentTime,newPosition=new_pos[direction](self.position[0],self.position[1]))
-        # distanceToOpponent = self.calculate_distance_to_opponent
-        # damage = self.calculate_attack_damage(attack = self.attack*coefficient, opponent=opponent)
         self.print_move_info(direction,currentTime)
-        # self.deal_damage_to(opponent=opponent,
-        #                     damage= damage,
-        #                     currentTime=currentTime)
-        # self.attack_counter = 0
+
 
     def print_move_info(self,direction: str, currentTime: int):
         # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 
