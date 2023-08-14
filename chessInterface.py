@@ -329,76 +329,50 @@ class chessInterface:
     
 
     def move(self,board:list[list[chessInterface]])->dict[str, any]:
-        # distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
-        # def bfs(step:int, curr_pos:list[int]):
-        #     '''
-        #     distance: 棋子距离矩阵
-        #     step: 步数
-        #     curr_pos: 当前棋子位置
-        #     '''
-        #     try:
-        #         if board[curr_pos[0]][curr_pos[1]] is None or step == 0:
-        #             if distance[curr_pos[0]][curr_pos[1]] > step:
-        #                 distance[curr_pos[0]][curr_pos[1]] = step
-        #                 bfs(step + 1, [curr_pos[0],curr_pos[1]-1]) # 上
-        #                 bfs(step + 1, [curr_pos[0],curr_pos[1]+1]) # 下
-        #                 bfs(step + 1, [curr_pos[0]-1,curr_pos[1]]) # 左
-        #                 bfs(step + 1, [curr_pos[0]+1,curr_pos[1]]) # 右
-        #     except IndexError:
-        #         pass
-        # bfs(0,self.position)
-        def bfs_queue(source_pos:list[int]):
-            distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)]
-
+        '''
+        返回棋子移动方向和目标
+        '''
+        def bfs_queue(source_pos:list[int]): # queue实现bfs
+            '''
+            通过广度优先搜索
+            返回移动距离最近的敌方棋子
+            '''
+            # 初始化
+            distance:list[list[int]] = [[30 for _ in range(5)] for _ in range(6)] # 棋子与棋盘上每个格 的移动距离
+            distance[source_pos[0]][source_pos[1]] = 0
             queue = Queue()
-            # print(queue)
-            # queue.put({'step':0,'pos':source_pos,'direction':'origin'})
-            queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上
+            
+            # 棋子初始移动方向
+            queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上 
             queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
             queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
             queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
 
+            # 优先处理距离棋子距离为1的格，然后2，3，4，以此类推
             while queue.not_empty:
                 try:
-                    curr = queue.get_nowait()
-                    # print(self,curr)
-                    # print('1')
-                    step = curr['step']
-                    # print('2')
-                    curr_pos = curr['pos']
-                    # print('3')
-                    if curr_pos[0] < 0 or curr_pos[1] < 0:
+                    curr = queue.get_nowait() # 获取下一个未探索的格
+                    step = curr['step'] # 当前距离棋子的移动距离
+                    curr_pos = curr['pos'] # 当前位置
+                    if curr_pos[0] < 0 or curr_pos[1] < 0: # python接受负的index值，这里避免这种情况发生
                         # raise IndexError(f"Index is out of range")
                         continue
-                    # print('44')
-                    # print(curr_pos[0])
-                    # print(curr_pos[1])
-                    # print(board[curr_pos[0]][curr_pos[1]])
-                    # print(board)
                     chess = board[curr_pos[0]][curr_pos[1]]
-                    # print('5')
-                    direction = curr['direction']
+                    direction = curr['direction'] # 传递初始移动方向 至输出
                     if chess is None: # path reached another chess
-                        if distance[curr_pos[0]][curr_pos[1]] > step:
+                        if distance[curr_pos[0]][curr_pos[1]] > step: # 更新 棋子与当前格 的最短移动距离
                             distance[curr_pos[0]][curr_pos[1]] = step
                             queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
                             queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
                             queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
                             queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
-                    elif chess.team != self.team: # found the closest opponent chess
+                    elif chess.team != self.team: # 发现距离棋子 移动距离最近 的敌方棋子
                         return {'target_distance':step, 'target_position':curr_pos, 'target':chess, 'direction':direction}
-                    # print('6')
-                except IndexError:
-                    # print("7")
-                    # raise
+                except IndexError: # 寻路超出棋盘范围
                     continue
-                except Empty:
-                    return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
-            # print(queue)
+                except Empty: # queue为空
+                    break
             return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
-        # print('chess:',self)
-        # print('\n'.join([f"{key}: {value}" for key, value in bfs_queue(self.position).items()]))
-        # print('\n')
         return bfs_queue(self.position)
 
     
