@@ -235,7 +235,7 @@ class chessInterface:
         if self.id in {2,6,7,14,15,16,17,25,26} and opponent.id == 12: # 自己如果是虫，对方如果是犀牛，就减少自己对其造成的伤害
             damage = damage * (1-opponent.skill.reductionRate)
         if 'vulnerable' in opponent.statusDict:
-            damage = damage * ((opponent.statusDict['vulnerable'].amplification)/100 + 1)
+            damage = damage * ((opponent.statusDict['vulnerable'].amplification) + 1)
         opponent.health -= damage
         self.totalDamage += damage
         # check receiver status (比如对手是海胆, id=9，就需要查看对方是否有反伤开启，对手是犀牛，就查看自己是否是昆虫等)
@@ -256,11 +256,6 @@ class chessInterface:
         else:
             self.health = final_health
         print(f"    {self}受到{colored(amount, 'green')}点治疗，的生命值恢复到了{colored(self.health, 'green')} / {self.maxHP}")
-
-    def moveToCastPosition(self):
-        '''将棋子移动到最佳施法位置'''
-        bestPos = self.find_position_to_move(considerAttack=False, ConsiderSpell=True)
-        self.moveChessTo(newPosition=bestPos)
 
     def moveChessTo(self, currentTime:int,  newPosition: list[int]):
         '''
