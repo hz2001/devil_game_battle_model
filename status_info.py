@@ -251,7 +251,7 @@ class sand_poisoned(statusInterface):
                          statusType="damage")
         self.damageInterval = damageInterval
         self.statusOwner = statusOwner
-        self.damage = caster.skill.damage
+        self.damage = self.caster.skill.damage
         self.damageInterval = 100
         print(f"{currentTime/100}   {self.statusOwner}被【{self}】了")
 
@@ -272,6 +272,30 @@ class sand_poisoned(statusInterface):
                                            currentTime=currentTime)
                 return True
             return False
+
+class vulnerable(statusInterface):
+    def __init__(self, 
+                 currentTime: int,
+                 statusDuration: float,
+                 amplification: float,
+                 statusOwner: chessInterface) -> None:
+        super().__init__(statusName = "伤害加深",
+                         currentTime = currentTime,
+                         statusDuration=statusDuration,
+                         statusType = "debuff")
+        self.statusOwner = statusOwner  
+        self.amplification = amplification
+        print(f"    {statusOwner} 伤害加深 {amplification}%")
+
+    def activate(self, currentTime: float) -> bool:
+        if currentTime > self.statusEnd:
+            self.statusOwner.statusDict['vulnerable'] = None
+            self.statusOwner.statusDict.pop('vulnerable', None)
+            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
+            return False
+        else:
+            # print(self.statusEnd)
+            return True
 
 class frail(statusInterface):
     def __init__(self, 
@@ -295,6 +319,7 @@ class frail(statusInterface):
             self.statusOwner.statusDict['frail'] = None
             return False
         else:
+            # print(self.statusEnd)
             return True
 
 class bleeding(statusInterface):
@@ -312,12 +337,12 @@ class bleeding(statusInterface):
         self.instanceDamage = 10.0
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             self.statusOwner.statusDict['bleeding'] = None
+            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             return False
         else:
-            print(f"{currentTime/100}   {self.statusOwner}【{self}】,-{self.instanceDamage}!!!!!")
             self.caster.deal_damage_to(self.statusOwner, self.instanceDamage, currentTime)
+            print(f"{currentTime/100}   {self.statusOwner}【{self}】神志不清, <{self.statusOwner}>生命值还剩:{colored(self.statusOwner.health,'green')} / {self.statusOwner.maxHP}")
             return True
 
 

@@ -958,7 +958,7 @@ class bite(skillInterface):
         self.damage = 1
 
     def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
-        target.statusDict['frail'] = frail(currentTime=currentTime,statusDuration=3,armorReduction=100,statusOwner=target)
+        target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,statusDuration=1,amplification=30,statusOwner=target)
         target.statusDict['bleeding'] = bleeding(currentTime=currentTime,statusDuration=3,statusOwner=target,caster=caster)
         caster.deal_damage_to(opponent=target, damage=self.damage, currentTime=currentTime)
         print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,造成了{self.damage}点伤害")
