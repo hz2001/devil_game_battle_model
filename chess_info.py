@@ -7,284 +7,7 @@ from copy import deepcopy
 from numpy.random import random, randint
 from math import dist, floor
 
-statusDictExample= {
-'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-'blood_draining':None, 'sand_poisoned': None,
-'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-
-##################################################
-#### 棋子状态
-##################################################
-
-
-# TODO
-class moving(statusInterface):
-    def __init__(self,
-                 currentTime: int,
-                 statusOwner: chessInterface,
-                 newPosition:list[int],
-                 ) -> None:
-        super().__init__(statusName = "移动",
-                         currentTime = currentTime,
-                         statusDuration=0.3,
-                         statusType="moving")
-        self.statusOwner = statusOwner
-        self.activate(currentTime)
-        print(f"{currentTime/100}   {self.statusOwner}开始从{self.statusOwner.position}移动到{newPosition} ")
-
-    def activate(self, currentTime):
-        ''' 如果这个效果持续时间结束 就把这个状态从状态栏珊处移除 否则按照状态对棋子的数值积累 造成影响'''
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['moving'] = None
-            return False
-        else:
-            # 移动，跳过 本次攻击/移动判定
-            self.statusOwner.attack_counter = 0
-            return True
-# 变羊
-class hexed(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "变羊",
-                         currentTime = currentTime,
-                         statusDuration=2.0, statusType="disable")
-        self.statusOwner = statusOwner
-        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
-
-    def activate(self, currentTime):
-        ''' 如果这个效果持续时间结束 就把这个状态从状态栏珊处移除 否则按照状态对棋子的数值积累 造成影响'''
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['hexed'] = None
-            return False
-        else:
-            # 仍然被羊，跳过 本次攻击/移动判定
-            self.statusOwner.attack_counter = 0
-            return True
-
-# 眩晕
-class stunned(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "眩晕",
-                         currentTime = currentTime,
-                         statusDuration = statusDuration,
-                         statusType="disable")
-        self.statusOwner = statusOwner
-        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
-
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['stunned'] = None
-            return False
-        else:
-            # 仍然被眩晕，跳过 本次攻击/移动判定
-            self.statusOwner.attack_counter = 0
-            return True
-
-# 缴械
-class disarmed(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "缴械",
-                         currentTime = currentTime,
-                         statusDuration=statusDuration,
-                         statusType = "disable")
-        self.statusOwner = statusOwner
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['disarmed'] = None
-            return False
-        else:
-            # 仍然被缴械，跳过 本次攻击， 移动判定继续
-            self.statusOwner.attack_counter = 0
-            return True
-
-# 嘲讽
-class taunted(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "沉默",
-                         currentTime = currentTime,
-                         statusDuration=statusDuration,
-                         statusType = "disable")
-        self.statusOwner = statusOwner
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['taunted'] = None
-            return False
-        else:
-            # 仍然被嘲讽，跳过 移动 和 技能判定， 攻击判定继续
-            self.statusOwner.cd_counter -= 5
-            return True
-
-# 沉默
-class silenced(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "沉默",
-                         currentTime = currentTime,
-                         statusDuration=statusDuration,
-                         statusType = "disable")
-        self.statusOwner = statusOwner
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['silenced'] = None
-            return False
-        else:
-            # 仍然被沉默，跳过 技能判定，攻击判定继续
-            self.statusOwner.cd_counter -= 5
-            return True
-
-# 破坏 （被动无效化）
-class broken(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "破坏",
-                         currentTime = currentTime,
-                         statusDuration=statusDuration,
-                         statusType = "disable")
-        self.statusOwner = statusOwner
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['broken'] = None
-            return False
-        else:
-            # 仍然被缴械，如果有被动技能，跳过被动技能判定
-            if self.statusOwner.skill.type == 'passive':
-                self.statusOwner.cd_counter -= 5
-            return True
-
-class attack_interval_change(statusInterface):
-    def __init__(self, currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface,
-                 changeRatio: float) -> None:
-        super().__init__(statusName = "攻击间隔变化",
-                         currentTime = currentTime,
-                         statusDuration=statusDuration,
-                         statusType = "buff/debuff")
-        self.statusOwner = statusOwner
-        self.originalAttackInterval = deepcopy(self.statusOwner.attack_interval)
-        currentAttackInterval =1/(1/self.statusOwner.attack_interval * (1+changeRatio))
-        print(f"    {statusOwner} 攻击速度提升{changeRatio*100}%, 原攻击间隔{self.statusOwner.attack_interval/100}, 现攻击间隔{currentAttackInterval/100}")
-        self.statusOwner.attack_interval = currentAttackInterval
-        
-
-    def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, 攻击间隔回复初始值{self.originalAttackInterval}")
-            self.statusOwner.attack_interval = self.originalAttackInterval
-            self.statusOwner.statusDict['attack_interval_change'] = None
-            return False
-        else:
-            # 减小/加大攻击间隔 攻击间隔=1/攻速
-            return True
-
-class summoned(statusInterface):
-    def __init__(self,
-                 currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "被召唤",
-                         currentTime = currentTime,
-                         statusDuration = statusDuration,
-                         statusType = "buff/debuff")
-        self.statusOwner = statusOwner
-
-    def activate(self, currentTime: float):
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, {self.statusOwner}死掉")
-            self.statusOwner.health = -1
-            self.statusOwner.check_death()
-
-# 反伤
-class dispersion_status(statusInterface):
-    def __init__(self,
-                 currentTime: int,
-                 statusOwner: sea_hedgehog) -> None:
-        super().__init__(statusName= "反伤",
-                 statusDuration = 2.5,
-                 statusType = "special",
-                 currentTime=currentTime
-                 )
-        self.statusOwner = statusOwner
-        print(f"{currentTime/100}   {self.statusOwner}对自己施加【{self}】状态")
-
-    def activate(self, currentTime: int,
-                 target: chessInterface = None,
-                 damage:float = 0) -> bool:
-        ''' 在棋子收到伤害时触发, 如果时间到了 return True 并且关掉状态'''
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['dispersion_status'] = None
-            return False
-        else:
-            if target is not None and damage > 0:
-                damage = damage * self.statusOwner.skill.returnRate
-                # 当海胆收到伤害时 反弹伤害*1.5
-                print(f'{currentTime/100}  {self.statusOwner} 触发了{self},')
-                self.statusOwner.deal_damage_to(opponent=target,
-                                    damage=damage,
-                                    currentTime=currentTime)
-                print(f"     <{self.statusOwner}> *{self}*了<{target}>, 造成了{colored(damage,'cyan')}点伤害，<{target}>生命值还剩:{colored(target.health,'green')} / {target.maxHP}") 
-            return True
-
-# 沙漠剧毒
-class sand_poisoned(statusInterface):
-    def __init__(self,
-                 currentTime: int,
-                 statusOwner: chessInterface,
-                 caster:scorpion,
-                 damageInterval: int = 100 # 秒 * 100， 以防用float 不能用% 来判定
-                 ) -> None:
-        super().__init__(statusName = "沙漠剧毒",
-                         currentTime = currentTime,
-                         statusDuration=5.0,
-                         statusType="damage")
-        self.caster = caster
-        self.damageInterval = damageInterval
-        self.statusOwner = statusOwner
-        self.damage = caster.skill.damage
-        self.damageInterval = 100
-        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了")
-
-    def activate(self, currentTime):
-        ''' 如果这个效果持续时间结束 就把这个状态从状态栏珊处移除 否则按照状态对棋子的数值积累 造成影响'''
-        if currentTime > self.statusEnd:
-            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            self.statusOwner.statusDict['sand_poisoned'] = None
-            return False
-        else:
-            # 仍然被毒，目标掉血
-            # 如果触发间隔到了就掉血
-            # print(self.statusEnd, currentTime)
-            if (self.statusEnd - currentTime)% self.damageInterval == 0: # 触发间隔 1 秒
-                print(f"{currentTime/100}   {self.statusOwner}收到【{self}】的{colored(str(self.damage),'cyan')}点伤害，生命值还剩:{colored(self.statusOwner.health, 'green')} / {self.statusOwner.maxHP}")
-                self.caster.deal_damage_to(self.statusOwner,
-                                           damage = self.damage,
-                                           currentTime=currentTime)
-                return True
-            return False
-
-
-
-
-
-
-
-
+from status_info import *
 
 ##################################################
 ##### 棋子技能以及 单位信息
@@ -336,30 +59,46 @@ class rabbit(chessInterface):
 # 技能：三个臭皮匠
 class threeStinkers(skillInterface):
     # spit saliva 
-    def __init__(self) -> None:
+    ant_count = 0
+    activate = False
+    def __init__(self, attack, armor, health, maxHP, threshold = 5) -> None: 
         super().__init__(skillName = "三个臭皮匠",
                          cd = 0,
                          type = "active",
                          description= f"人多尼酿大")
         # self.duration = 0
-    
+        # 不能用target，这样的话会在一个蚂蚁死掉之后其余蚂蚁属性变弱, 所以我们用一个公用的counter
+        # 也不能用teamDict， 因为棋子死掉后会从teamDict 去除掉，有可能带了一个其他棋子死掉了，这样的话teamDict 中所有棋子就都是蚂蚁了
+        threeStinkers.ant_count += 1
+        self.attack = deepcopy(attack)
+        self.armor = deepcopy(armor)
+        self.health = deepcopy(health)
+        self.maxHP = deepcopy(maxHP)
+        self.threshold = threshold
+        
+        # print("三个臭皮匠",self.ant_count)
+
+        
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
-        if target.statusDict['broken'] is None:
-            ant_count = len({id: chess for id, chess in target.teamDict.items() if chess.id == 2})
-            target.attack = 20 * ant_count
+        if target.statusDict['broken'] is None and self.ant_count >= self.threshold:
+            activate = True
+            target.attack = self.attack * self.ant_count
             # target.attack_interval = 1.0 / ant_count
-            target.attack_range = 1 * ant_count
-            target.armor = 12 * ant_count
-            target.health = target.health / target.maxHP * 180 * ant_count
-            target.maxHP = 180 * ant_count
-            # print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}超进化了")
+            target.armor = self.armor * self.ant_count
+            target.health = target.health / target.maxHP * self.maxHP * self.ant_count
+            target.maxHP = self.maxHP * self.ant_count
+            if activate is False:
+                activate = True
+                print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}超进化了")
+        elif self.ant_count < self.threshold:
+            pass
         else:
-            target.attack = 20
+            self.activate = False
+            target.attack = self.attack
             # target.attack_interval = 1.0
-            target.attack_range = 1
-            target.armor = 12
-            target.health = target.health / target.maxHP * 180
-            target.maxHP = 180
+            target.armor = self.armor
+            target.health = target.health / target.maxHP * self.maxHP
+            target.maxHP = self.maxHP
             print(f"{currentTime/100}   {target}收到了破坏,{target}被打回了原形")
 
 class ant(chessInterface):
@@ -371,7 +110,7 @@ class ant(chessInterface):
                          attack = 20,
                          attack_interval = 1,
                          attack_range = 1,
-                         armor=12,
+                         armor=10,
                          health=180,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -381,7 +120,11 @@ class ant(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        self.skill = threeStinkers()
+        print(self,self.maxHP)
+        self.skill = threeStinkers( attack = self.attack, 
+                                   armor= self.armor, 
+                                   health= self.health, 
+                                   maxHP=self.maxHP)
 
     def cast(self,currentTime: int):
         ''' bigger
@@ -1204,6 +947,22 @@ class elephant(chessInterface):
         chessInterface.uniqueID += 1
 
 ############################################################################################################
+# old虎
+class bite(skillInterface):
+    def __init__(self) -> None:
+        super().__init__(skillName= "bite",
+                         cd = 6,
+                         type = "active",
+                         description="description needed!!!",
+                         castRange = 1)
+        self.damage = 1
+
+    def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
+        target.statusDict['frail'] = frail(currentTime=currentTime,statusDuration=3,armorReduction=100,statusOwner=target)
+        target.statusDict['bleeding'] = bleeding(currentTime=currentTime,statusDuration=3,statusOwner=target,caster=caster)
+        caster.deal_damage_to(opponent=target, damage=self.damage, currentTime=currentTime)
+        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,造成了{self.damage}点伤害")
+
 class tiger(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "老虎",id=24,
@@ -1214,7 +973,7 @@ class tiger(chessInterface):
                          attack_range = 1,
                          armor = 43,
                          health= 1040,# 有点低
-                         skill = None)
+                         skill = bite())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1222,6 +981,15 @@ class tiger(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+
+    def cast(self, currentTime: int):
+        # opponents_distances = self.opponent_distances()
+        # nearest = sorted(opponents_distances)[0]
+        # # print(self,nearest,opponents_distances)
+        # chessToBeAttacked = opponents_distances[nearest]
+        target = self.opponent_distances()[sorted(self.opponent_distances())[0]]
+        self.skill.cast(currentTime=currentTime,caster=self,target=target)
+        return super().cast(implemented = True)
 
 #insect
 ############################################################################################################
