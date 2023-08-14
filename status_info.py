@@ -2,7 +2,7 @@ from termcolor import colored
 from chessInterface import chessInterface
 from statusInterface import statusInterface
 from copy import deepcopy
-from chess_info import *
+# from chess_info import *
 
 statusDictExample= {
 'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -209,13 +209,14 @@ class summoned(statusInterface):
 # 反伤
 class dispersion_status(statusInterface):
     def __init__(self,
-                 currentTime: int) -> None:
+                 currentTime: int,
+                 statusOwner: chessInterface) -> None:
         super().__init__(statusName= "反伤",
                  statusDuration = 2.5,
                  statusType = "special",
                  currentTime=currentTime
                  )
-        self.statusOwner = sea_hedgehog
+        self.statusOwner = statusOwner
         print(f"{currentTime/100}   {self.statusOwner}对自己施加【{self}】状态")
 
     def activate(self, currentTime: int,
@@ -242,13 +243,14 @@ class sand_poisoned(statusInterface):
     def __init__(self,
                  currentTime: int,
                  statusOwner: chessInterface,
-                 caster: scorpion,
+                 caster: chessInterface,
                  damageInterval: int = 100 # 秒 * 100， 以防用float 不能用% 来判定
                  ) -> None:
         super().__init__(statusName = "沙漠剧毒",
                          currentTime = currentTime,
                          statusDuration=5.0,
                          statusType="damage")
+        self.caster = caster
         self.damageInterval = damageInterval
         self.statusOwner = statusOwner
         self.damage = self.caster.skill.damage

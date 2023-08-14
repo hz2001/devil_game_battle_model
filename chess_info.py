@@ -950,10 +950,10 @@ class elephant(chessInterface):
 # old虎
 class bite(skillInterface):
     def __init__(self) -> None:
-        super().__init__(skillName= "bite",
+        super().__init__(skillName= "重伤",
                          cd = 6,
                          type = "active",
-                         description="description needed!!!",
+                         description="老虎重伤对手，使对手收到的所有伤害增加，并且流血",
                          castRange = 1)
         self.damage = 1
 
@@ -969,7 +969,7 @@ class tiger(chessInterface):
                          race = "mammal",
                          star = 4,
                          attack = 150,
-                         attack_interval=0.55,
+                         attack_interval=0.7,
                          attack_range = 1,
                          armor = 43,
                          health= 1040,# 有点低

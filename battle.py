@@ -186,36 +186,7 @@ class battle:
 
 
         return IDtoBeAttacked
-
-    # 技能判定用棋子自身的方法
-
-    # 攻击判定
-    # 计算伤害的公式
-    def calculate_attack_damage(self, attack, opponentArmor):
-        return attack * (1 - opponentArmor*0.09/(1+0.09*opponentArmor)) * 2
-
-    def chess_attack(self,
-                     currentTime: int,
-                     attacker:chessInterface,
-                     opponent:chessInterface):
-        '''棋子攻击时调用这个函数'''
-        if attacker.team == 0:
-            opponentTeamDict = self.blueTeamDict
-            attackerDict = self.redTeamDict
-        else:
-            opponentTeamDict = self.redTeamDict
-            attackerDict = self.blueTeamDict
-
-        damage = self.calculate_attack_damage(attacker.attack, opponent.armor)
-        attacker.deal_damage_to(opponent=opponent, amount=damage, currentTime = currentTime)
-        if not isinstance(attacker, sea_hedgehog) and isinstance(opponent, sea_hedgehog) and \
-            opponent.statusDict['dispersion_status'] is not None:
-            # 如果两个海胆在场上，会有无限loop 的情况 所以加一个条件
-            opponent.statusDict['dispersion_status'].activate(currentTime=currentTime,
-                                                              target = attacker,
-                                                              damage = damage)
-        # TODO: 改成棋子自己攻击，而不是在这里攻击
-
+    
     # 对战
     def battle_with_skills(self):
         current_time = 0
@@ -283,8 +254,8 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [ant(position=[0,0]), ant(position=[0,1]),ant(position=[0,2]),ant(position=[0,3]),ant(position=[0,4])]
-    blueTeam = [hippo(position=[3,2]),ladybug(position=[4,4]),mantis(position=[3,3])]
+    redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
+    blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()
