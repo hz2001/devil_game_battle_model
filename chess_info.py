@@ -18,24 +18,41 @@ from status_info import *
 # 1星卡
 ############################################################################################################
 # 兔子
-class spit(skillInterface):
+class spellDodge(skillInterface): # 兔子的躲避技能的技能应当作为一个高等级卡的技能，并且附带cd而不是一局一次。这个技能比较复杂，而且效果并不直观，不适合玩家一开始上手
     # spit saliva 
     def __init__(self) -> None:
-        super().__init__(skillName = "吐口水",
-                         cd = 0.1,
+        super().__init__(skillName = "走位走位",
+                         cd = 0,
                          type = "active",
-                         description= f"吐口水,变得快乐")
+                         description= f"兔子用灵巧的走位，闪避了第一个对其使用的指向性技能")
         self.duration = 0
     
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
-        targetList = []
-        for (uniqueID, chess) in caster.allChessDict.items():
-            if chess.team != caster.team:
-                targetList.append(chess)
-        target = targetList[randint(0, len(targetList))] 
-        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}心情很差")
+        print(f"{currentTime/100}   {caster}使用了{self},闪避了技能")
+        if caster.canDodge is True:
+            caster.canDodge = False
+
+class huishoutao(skillInterface):
+    def __init__(self,
+                 cd:float = 4,
+                 stunDuration:float = 1,
+                 damage: float =100) -> None:
+        super().__init__(skillName = "回手掏",
+                         cd = cd,
+                         type = "active",
+                         description= f"对距离自己最近的目标进行飞踢，眩晕敌人1秒并且造成100点伤害")
+        self.stunDuration = stunDuration
+        self.damage = damage
+    
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
+        target = caster.get_hate_mechanism()
+        print(f"{currentTime/100}   {caster}对{target}使用了{self},造成{self.damage}点伤害")
+        target.statusDict['stunned'] = stunned(currentTime=currentTime,
+                                               statusDuration=self.stunDuration,
+                                               statusOwner=target)
+        caster.deal_damage_to(opponent=target,damage = self.damage,currentTime=currentTime)
   
-class rabbit(chessInterface):
+class rabbit(chessInterface): 
     def __init__(self,position= [3,3]):
         super().__init__(chessName = "兔子",
                          id=1,
@@ -641,7 +658,21 @@ class bear(chessInterface):
 ############################################################################################################
 # 蝴蝶
 
+class silenceAttack(skillInterface):
+    def __init__(self, skillName: str = "沉默花粉",
+                 cd: float = 0,
+                 type: str = "passive",
+                 description: str = "蝴蝶用花粉蒙蔽敌人的知觉，让其不沉默，持续1.5秒",
+                 castRange: float = 100,
+                 duration:float = 1.5) -> None:
+        super().__init__(skillName, cd, type, description, castRange)
+        self.duration = duration
 
+    def cast(self, currentTime, caster, target: chessInterface):
+        super().cast(currentTime=currentTime, caster = caster, target = target)
+        target.statusDict['silence'] = silenced(currentTime=currentTime,
+                                                statusDuration=self.duration,
+                                                statusOwner = target)
 class butterfly(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "福蝶",id=14,
@@ -652,7 +683,7 @@ class butterfly(chessInterface):
                          attack_range = 3,
                          armor = 27,
                          health= 518,
-                         skill = None)
+                         skill = silenceAttack(duration = 1.5))
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -660,6 +691,10 @@ class butterfly(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> None:
+        self.skill.cast(currentTime=currentTime,caster = self, target =opponent)
+        super().do_attack(opponent, currentTime, coefficient)
 
 ############################################################################################################
 # 萤火虫
@@ -1039,18 +1074,31 @@ class ensnarement(skillInterface):
         self.duration = duration
         
     def move_to_target(self, caster:chessInterface, target: chessInterface, placeTaken: list = []):
+        """找到一个目标旁边的随机地点
+
+        Args:
+            caster (chessInterface): 施法者
+            target (chessInterface): 施法目标
+            placeTaken (list, optional): _description_. Defaults to [].
+
+        Returns:
+            list[int]: 目标旁边的一个随机坐标
+        """
         positions = target.get_surrounding(1)
         for p in positions.copy():
             if p in placeTaken:
-                # p. 
-                pass
+                positions.remove(p)
+        return positions[randint(0,len(positions))] 
+        
     def cast(self, currentTime:int, caster:chessInterface, target: chessInterface= None):
         target = None
         highestAttack = -1
         for (uniqueID, chess) in caster.allChessDict.items():
             if chess.team != caster.team and chess.attack > highestAttack:
                 target = chess
-        self.move_to_target(caster = caster, target= target)
+        pos = self.move_to_target(caster = caster, target= target)
+        caster.moveChessTo(currentTime,pos)
+        # TODO: 更新棋盘
         if target.statusDict['disarmed'] is not None:
             #  增加缴械时间
             target.statusDict['disarmed'].statusEnd = currentTime + self.duration
@@ -1085,7 +1133,7 @@ class spider(chessInterface):
 
 #marine
 ############################################################################################################
-class octpus(chessInterface):
+class octopus(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "章鱼",id=27,
                          race = "marine",
