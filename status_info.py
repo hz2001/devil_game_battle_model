@@ -287,7 +287,7 @@ class vulnerable(statusInterface):
                          statusType = "debuff")
         self.statusOwner = statusOwner  
         self.amplification = amplification
-        print(f"    {statusOwner} 伤害加深 {amplification}%")
+        print(f"    {statusOwner} 伤害加深 {amplification*100}%")
 
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
@@ -329,22 +329,24 @@ class bleeding(statusInterface):
                  currentTime: int, 
                  statusDuration: float, 
                  statusOwner: chessInterface,
-                 caster:chessInterface) -> None:
-        super().__init__(statusName = "留学",
+                 caster:chessInterface,
+                 instanceDamage: float) -> None:
+        super().__init__(statusName = "流血",
                          currentTime = currentTime,
                          statusDuration = statusDuration,
                          statusType = "debuff")
         self.statusOwner = statusOwner  
         self.caster = caster
-        self.instanceDamage = 10.0
+        self.instanceDamage = instanceDamage
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             self.statusOwner.statusDict['bleeding'] = None
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             return False
         else:
-            self.caster.deal_damage_to(self.statusOwner, self.instanceDamage, currentTime)
-            print(f"{currentTime/100}   {self.statusOwner}【{self}】神志不清, <{self.statusOwner}>生命值还剩:{colored(self.statusOwner.health,'green')} / {self.statusOwner.maxHP}")
+            if (self.statusEnd - currentTime) % 20 == 0: # 每0.2秒触发一次
+                print(f"{currentTime/100}   {self.statusOwner}【{self}】神志不清, <{self.statusOwner}>生命值还剩:{colored(self.statusOwner.health,'green')} / {self.statusOwner.maxHP}")
+                self.caster.deal_damage_to(self.statusOwner, self.instanceDamage, currentTime)
             return True
 
 

@@ -565,11 +565,11 @@ class monkey(chessInterface):
         
 ############################################################################################################
 class antiInsect(skillInterface):
-    def __init__(self, reductionRate: float = 0.8) -> None:
+    def __init__(self, reductionRate: float = 0.4) -> None:
         super().__init__(skillName = "昆虫克制",
                     cd= 0,
                     type= "passive",
-                    description= "犀牛的皮非常的厚，让昆虫的攻击穿透不了",
+                    description= "犀牛的皮非常的厚，让昆虫的攻击穿透不了,降低80%昆虫对其造成的伤害",
                     castRange = 100)
         self.reductionRate = reductionRate
 
@@ -599,8 +599,10 @@ class earth_shock(skillInterface):
     def __init__(self, skillName: str = "震撼大地",
                  cd: float = 7.0,
                  type: str = "active",
-                 description: str = "熊震撼大地，眩晕身边的所有敌人") -> None:
+                 description: str = "熊震撼大地，眩晕身边的所有敌人,并且造成伤害",
+                 damage:float = 150) -> None:
         super().__init__(skillName, cd, type, description)
+        self.damage = damage
 
     def cast(self, currentTime, caster: chessInterface, target: chessInterface = None):
         caster.cd_counter = 0 # reset the counter for this skill
@@ -610,6 +612,7 @@ class earth_shock(skillInterface):
                 chess.statusDict['stunned'] = stunned(statusOwner=chess,
                                                       currentTime=currentTime,
                                                       statusDuration=2.5)
+                caster.deal_damage_to(opponent=chess,damage = self.damage, currentTime=currentTime)
 # 熊
 class bear(chessInterface):
     def __init__(self,position = [3,3]):
@@ -949,19 +952,31 @@ class elephant(chessInterface):
 ############################################################################################################
 # old虎
 class bite(skillInterface):
-    def __init__(self) -> None:
+    def __init__(self,
+                 duration: float = 3.0,
+                 amplification: float = 0.3,
+                 bleedInstanceDamage: float = 25) -> None:
         super().__init__(skillName= "重伤",
                          cd = 6,
                          type = "active",
-                         description="老虎重伤对手，使对手收到的所有伤害增加，并且流血",
+                         description=f"老虎使用重击攻击目标，造成150%的暴击，使对手收到的所有伤害增加{amplification}，并且流血,在{duration}秒内共造成{duration*bleedInstanceDamage}点伤害",
                          castRange = 1)
-        self.damage = 1
+        self.duration = duration
+        self.amplification = amplification
+        self.instanceDamage = bleedInstanceDamage
 
     def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
-        target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,statusDuration=1,amplification=30,statusOwner=target)
-        target.statusDict['bleeding'] = bleeding(currentTime=currentTime,statusDuration=3,statusOwner=target,caster=caster)
-        caster.deal_damage_to(opponent=target, damage=self.damage, currentTime=currentTime)
-        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,造成了{self.damage}点伤害")
+        target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,
+                                                     statusDuration=self.duration,
+                                                     amplification=self.amplification,
+                                                     statusOwner=target)
+        target.statusDict['bleeding'] = bleeding(currentTime=currentTime,
+                                                 statusDuration=self.duration,
+                                                 statusOwner=target,
+                                                 caster=caster,
+                                                 instanceDamage=self.instanceDamage)
+        caster.do_attack(opponent=target, coefficient=1.5, currentTime=currentTime)
+        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,施加流血和脆弱效果")
 
 class tiger(chessInterface):
     def __init__(self,position = [3,3]):

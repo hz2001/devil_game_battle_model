@@ -233,7 +233,7 @@ class chessInterface:
             currentTime (int): _description_
         """
         if self.id in {2,6,7,14,15,16,17,25,26} and opponent.id == 12: # 自己如果是虫，对方如果是犀牛，就减少自己对其造成的伤害
-            damage = damage * opponent.skill.reductionRate
+            damage = damage * (1-opponent.skill.reductionRate)
         if 'vulnerable' in opponent.statusDict:
             damage = damage * ((opponent.statusDict['vulnerable'].amplification)/100 + 1)
         opponent.health -= damage
