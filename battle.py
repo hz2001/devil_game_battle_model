@@ -15,15 +15,12 @@ class battle:
             根据当前棋子的状态 计算棋子属性/将会掉的血量/
         施法仇恨判定:
             判定下一次攻击/施法的单位是什么 如果攻击范围内有敌人 就跳过移动判定 否则进行移动判定
-        移动判定:
-            判定当前棋子需要移动到什么位置 并且移动棋子 正在移动的棋子会有0.3秒攻击/技能滞后
         技能判定:
             如果时间符合技能cd 那么call当前棋子的技能方法 并且判定攻击/受益对象
         攻击判定:
             进行攻击判定 掉血或者击杀对方棋子
-        被攻击者判定:
-            如果被攻击者是<海胆> 这种被攻击触发技能 那么需要判定其状态 技能是否为开启状态
-            如果攻击者是<蝎子> 这种带有攻击特效的棋子 那么给被攻击者施加相应状态
+        移动判定:
+            判定当前棋子需要移动到什么位置 并且移动棋子 正在移动的棋子会有0.3秒攻击/技能滞后
     '''
     board:list[list[chessInterface]] = [[None,None,None,None,None],
                                         [None,None,None,None,None],
@@ -51,7 +48,7 @@ class battle:
             chess.team = 0
             self.redTeamDict[chess.uniqueID] = chess
             self.redTeamAliveNO += 1
-            self.add_chess_to_board(chess)
+            self.add_chess_to_board(chess,finished= False)
             self.allChessDict[chess.uniqueID] = chess
             chess.add_team_dict(self.redTeamDict)
             chess.add_allChessDict(self.allChessDict)
@@ -61,7 +58,7 @@ class battle:
             chess.team = 1 # 把棋子的阵营改成蓝色方
             self.blueTeamAliveNO += 1
             self.blueTeamDict[chess.uniqueID] = chess
-            self.add_chess_to_board(chess)
+            self.add_chess_to_board(chess,finished= False)
             self.allChessDict[chess.uniqueID] = chess
             chess.add_team_dict(self.blueTeamDict)
             chess.add_allChessDict(self.allChessDict)
@@ -86,10 +83,18 @@ class battle:
     # [ [4,0] [4,1] [4,2] [4,3] [4,4] ]
     # [ [5,0] [5,1] [5,2] [5,3] [5,4] ]
 
-    def add_chess_to_board(self, chessToBeAdded: chessInterface):
-        '''把新建棋子放在棋盘上'''
+    def add_chess_to_board(self, chessToBeAdded: chessInterface, finished = True):
+        '''检测棋子的位置是否为正确位置，并且把新建棋子放在棋盘上'''
         row = chessToBeAdded.position[0]
         col = chessToBeAdded.position[1]
+        if finished == False:
+            if self.board[row][col] is not None:
+                raise Exception(f"{chessToBeAdded}的位置已被{self.board[row][col]}占据，请更换位置后重试") 
+            if chessToBeAdded.team == 0 and chessToBeAdded.position[0]>=3:
+                raise Exception("请把红方棋子放置在前三排") 
+            elif chessToBeAdded.team == 1 and chessToBeAdded.position[0] <=2:
+                raise Exception("请把蓝方棋子放置在后三排") 
+            
         self.board[row][col] = chessToBeAdded
 
     def clear_position(self, position: list[int]):
@@ -243,7 +248,9 @@ class battle:
                 elif attackerChess.can_move(): # 移动判定
                     action = attackerChess.move(self.board)
                     if action['target_distance'] is not None and action['target_distance'] > 1:
-                        attackerChess.statusDict['moving'] = moving(statusOwner=attackerChess, currentTime=current_time, newPosition=action['target_position'])
+                        attackerChess.statusDict['moving'] = moving(statusOwner=attackerChess, 
+                                                                    currentTime=current_time, 
+                                                                    newPosition=action['target_position'])
                         attackerChess.move_to(action['direction'],currentTime=current_time)
                         self.update_chess_position_onboard(chessToBeMoved=attackerChess)
                         # self.board_print()
@@ -275,7 +282,7 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [ant(position=[0,0]), ant(position=[0,1]),ant(position=[0,2]),ant(position=[0,2]),ant(position=[0,2])]
+    redTeam = [ant(position=[0,0]), ant(position=[0,1]),ant(position=[0,2]),ant(position=[0,3]),ant(position=[0,4])]
     blueTeam = [hippo(position=[3,2]),ladybug(position=[4,4]),mantis(position=[3,3])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
