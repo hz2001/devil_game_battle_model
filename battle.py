@@ -274,9 +274,8 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [ant(position=[0,0]), 
-               wolf(position =[1,0])]
-    blueTeam = [hippo(position=[3,1]),ladybug(position=[4,4])]
+    redTeam = [ant(position=[0,0]), ant(position=[0,1]),ant(position=[0,2]),ant(position=[0,2]),ant(position=[0,2])]
+    blueTeam = [hippo(position=[3,2]),ladybug(position=[4,4]),mantis(position=[3,3])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     newBattle.board_print()

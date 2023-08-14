@@ -336,30 +336,46 @@ class rabbit(chessInterface):
 # 技能：三个臭皮匠
 class threeStinkers(skillInterface):
     # spit saliva 
-    def __init__(self) -> None:
+    ant_count = 0
+    activate = False
+    def __init__(self, attack, armor, health, maxHP, threshold = 5) -> None: 
         super().__init__(skillName = "三个臭皮匠",
                          cd = 0,
                          type = "active",
                          description= f"人多尼酿大")
         # self.duration = 0
-    
+        # 不能用target，这样的话会在一个蚂蚁死掉之后其余蚂蚁属性变弱, 所以我们用一个公用的counter
+        # 也不能用teamDict， 因为棋子死掉后会从teamDict 去除掉，有可能带了一个其他棋子死掉了，这样的话teamDict 中所有棋子就都是蚂蚁了
+        threeStinkers.ant_count += 1
+        self.attack = deepcopy(attack)
+        self.armor = deepcopy(armor)
+        self.health = deepcopy(health)
+        self.maxHP = deepcopy(maxHP)
+        self.threshold = threshold
+        
+        # print("三个臭皮匠",self.ant_count)
+
+        
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
-        if target.statusDict['broken'] is None:
-            ant_count = len({id: chess for id, chess in target.teamDict.items() if chess.id == 2})
-            target.attack = 20 * ant_count
+        if target.statusDict['broken'] is None and self.ant_count >= self.threshold:
+            activate = True
+            target.attack = self.attack * self.ant_count
             # target.attack_interval = 1.0 / ant_count
-            target.attack_range = 1 * ant_count
-            target.armor = 12 * ant_count
-            target.health = target.health / target.maxHP * 180 * ant_count
-            target.maxHP = 180 * ant_count
-            # print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}超进化了")
+            target.armor = self.armor * self.ant_count
+            target.health = target.health / target.maxHP * self.maxHP * self.ant_count
+            target.maxHP = self.maxHP * self.ant_count
+            if activate is False:
+                activate = True
+                print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,{target}超进化了")
+        elif self.ant_count < self.threshold:
+            pass
         else:
-            target.attack = 20
+            self.activate = False
+            target.attack = self.attack
             # target.attack_interval = 1.0
-            target.attack_range = 1
-            target.armor = 12
-            target.health = target.health / target.maxHP * 180
-            target.maxHP = 180
+            target.armor = self.armor
+            target.health = target.health / target.maxHP * self.maxHP
+            target.maxHP = self.maxHP
             print(f"{currentTime/100}   {target}收到了破坏,{target}被打回了原形")
 
 class ant(chessInterface):
@@ -371,7 +387,7 @@ class ant(chessInterface):
                          attack = 20,
                          attack_interval = 1,
                          attack_range = 1,
-                         armor=12,
+                         armor=10,
                          health=180,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -381,7 +397,11 @@ class ant(chessInterface):
         self.position = position
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        self.skill = threeStinkers()
+        print(self,self.maxHP)
+        self.skill = threeStinkers( attack = self.attack, 
+                                   armor= self.armor, 
+                                   health= self.health, 
+                                   maxHP=self.maxHP)
 
     def cast(self,currentTime: int):
         ''' bigger
@@ -571,7 +591,7 @@ class transformation(skillInterface):
             target.armor += self.armorAlt
             target.attack_range = self.newAttackRange
             self.canCast = False
-            print(f"{currentTime/100}  {caster}使用了变身,{target}的攻击力提升{target.attack}点,护甲降低{abs(self.armorAlt)}点,攻击距离增加至{self.newAttackRange}")
+            print(f"{currentTime/100}      {caster}使用了变身,{target}的攻击力提升{target.attack}点,护甲降低{abs(self.armorAlt)}点,攻击距离增加至{self.newAttackRange}")
 
 
 class ladybug(chessInterface):
