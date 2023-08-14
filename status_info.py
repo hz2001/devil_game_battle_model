@@ -294,7 +294,7 @@ class vulnerable(statusInterface):
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             return False
         else:
-            print(self.statusEnd)
+            # print(self.statusEnd)
             return True
 
 class frail(statusInterface):
