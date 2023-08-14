@@ -314,7 +314,7 @@ class transformation(skillInterface):
             target.armor += self.armorAlt
             target.attack_range = self.newAttackRange
             self.canCast = False
-            print(f"{currentTime/100}  {caster}使用了变身,{target}的攻击力提升{target.attack}点,护甲降低{abs(self.armorAlt)}点,攻击距离增加至{self.newAttackRange}")
+            print(f"{currentTime/100}      {caster}使用了变身,{target}的攻击力提升{target.attack}点,护甲降低{abs(self.armorAlt)}点,攻击距离增加至{self.newAttackRange}")
 
 
 class ladybug(chessInterface):
