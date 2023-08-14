@@ -232,16 +232,17 @@ class battle:
                 attackerChess.activate_status(currentTime=current_time)
                 #进行仇恨判定
                 # opponentDict = self.get_opponent_dict(attackerChess)
-                if attackerChess.can_cast(): # 技能判定
-                    # 是时候放技能了！
-                    attackerChess.cast(currentTime=current_time)
-                    # TODO 漏洞：为了减小算法难度，计算对手状态的效果等到loop到该棋子的时候再完成，但是这样会导致如果有棋子在这之前对其发动攻击，则该伤害无法计算buff/debuff
+                if attackerChess.enemy_in_cast_range():
+                    if attackerChess.can_cast(): # 技能判定
+                        # 是时候放技能了！
+                        attackerChess.cast(currentTime=current_time)
+                        # TODO 漏洞：为了减小算法难度，计算对手状态的效果等到loop到该棋子的时候再完成，但是这样会导致如果有棋子在这之前对其发动攻击，则该伤害无法计算buff/debuff
                 if attackerChess.enemy_in_attack_range(): # 如果敌人在攻击范围内则不移动
                     if attackerChess.can_attack(): # 攻击判定
                         opponent = attackerChess.get_hate_mechanism()
                         attackerChess.do_attack(currentTime=current_time, opponent=opponent)
                 elif attackerChess.can_move(): # 移动判定
-                    action = attackerChess.move(self.board)
+                    action = attackerChess.get_enemy(self.board)
                     if action['target_distance'] is not None and action['target_distance'] > 1:
                         attackerChess.statusDict['moving'] = moving(statusOwner=attackerChess, currentTime=current_time, newPosition=action['target_position'])
                         attackerChess.move_to(action['direction'],currentTime=current_time)
@@ -275,8 +276,7 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [ant(position=[0,0]), 
-               wolf(position =[1,0])]
+    redTeam = [tiger(position=[0,0])]
     blueTeam = [hippo(position=[3,1]),ladybug(position=[4,4])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)

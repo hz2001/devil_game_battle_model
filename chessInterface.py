@@ -123,10 +123,15 @@ class chessInterface:
             self.statusDict['silenced'] is None and \
             self.statusDict['taunted'] is None and \
             self.statusDict['moving'] is None:
-            # print(self,'closest enemy distance',sorted(self.opponent_distances())[0])
-            # print(self,'attack range',self.attack_range)
-            # if sorted(self.opponent_distances())[0] <= self.attack_range:
             return self.attack_counter >= self.attack_interval
+    
+    def enemy_in_cast_range(self) -> bool:
+        if self.skill is None:
+            return False
+        if hasattr(self.skill,'castRange'):
+            return sorted(self.opponent_distances())[0] <= self.skill.castRange
+        else: 
+            return True
 
     def can_cast(self) -> bool:
         ''' 判定棋子是否可以施法
@@ -328,9 +333,9 @@ class chessInterface:
         return chessToBeAttacked
     
 
-    def move(self,board:list[list[chessInterface]])->dict[str, any]:
+    def get_enemy(self,board:list[list[chessInterface]])->dict[str, any]:
         '''
-        返回棋子移动方向和目标
+        返回棋子最近敌人距离和方向
         '''
         def bfs_queue(source_pos:list[int]): # queue实现bfs
             '''
