@@ -53,7 +53,7 @@ class huishoutao(skillInterface):
         caster.deal_damage_to(opponent=target,damage = self.damage,currentTime=currentTime)
   
 class rabbit(chessInterface): 
-    def __init__(self,position= [3,3]):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "兔子",
                          id=1,
                          race = "mammal",
@@ -63,14 +63,18 @@ class rabbit(chessInterface):
                          attack_range = 1,
                          armor=9,
                          health=318,
-                         skill = None)
+                         skill = huishoutao())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+    def cast(self, currentTime: int = 0):
+        self.skill.cast(currentTime=currentTime, caster = self)
+        return super().cast(implemented= True)
 ############################################################################################################
 # 蚂蚁
 # 技能：三个臭皮匠
@@ -119,7 +123,7 @@ class threeStinkers(skillInterface):
             print(f"{currentTime/100}   {target}收到了破坏,{target}被打回了原形")
 
 class ant(chessInterface):
-    def __init__(self,position= [3,3]):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "蚂蚁",
                          id=2,
                          race = "insect",
@@ -134,10 +138,11 @@ class ant(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        print(self,self.maxHP)
+        # print(self,self.maxHP)
         self.skill = threeStinkers( attack = self.attack, 
                                    armor= self.armor, 
                                    health= self.health, 
@@ -152,7 +157,7 @@ class ant(chessInterface):
 ############################################################################################################
 # 小丑鱼
 class littleUglyFish(chessInterface):
-    def __init__(self,position= [3,3]):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "小丑鱼",
                          id=3,
                          race = "marine",
@@ -167,7 +172,8 @@ class littleUglyFish(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -195,7 +201,7 @@ class hex(skillInterface):
             target.statusDict['hexed'] = hexed(statusOwner=target, currentTime=currentTime)
 
 class llama(chessInterface):
-    def __init__(self,position= [3,3]):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "羊驼",
                          id=4,
                          race = "mammal",
@@ -210,7 +216,8 @@ class llama(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         self.skill = hex()
@@ -253,7 +260,7 @@ class summonWolfMinions(skillInterface):
                     bestPlace = [row,col]
         if bestPlace is not None:
             # 棋盘没满,召唤小狼1
-            wolfMinion1 = wolfMinion(position=bestPlace,
+            wolfMinion1 = wolfMinion(position =bestPlace,
                                      currentTime=currentTime,
                                      allChessDict=caster.allChessDict,
                                      teamDict = caster.teamDict)
@@ -261,7 +268,7 @@ class summonWolfMinions(skillInterface):
             caster.allChessDict[wolfMinion1.uniqueID] = wolfMinion1
         if secondPlace is not None:
             # 棋盘没满,召唤小狼2
-            wolfMinion2 = wolfMinion(position=secondPlace,
+            wolfMinion2 = wolfMinion(position =secondPlace,
                                      currentTime=currentTime,
                                      allChessDict=caster.allChessDict,
                                      teamDict=caster.teamDict)
@@ -284,7 +291,8 @@ class wolf(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -294,7 +302,7 @@ class wolf(chessInterface):
         return super().cast(currentTime=currentTime,implemented=True)
 
 class wolfMinion(wolf):
-    def __init__(self, allChessDict, teamDict, currentTime:int, position=[3, 3]):
+    def __init__(self, allChessDict, teamDict, currentTime:int, position = [3, 3]):
         super().__init__(position, skill = None)
         self.chessName = "狼分身"
         print(f"      {self}被召唤了!")
@@ -336,7 +344,7 @@ class transformation(skillInterface):
 
 class ladybug(chessInterface):
     #瓢虫
-    def __init__(self, position= [3,3]):
+    def __init__(self, position = [3,3]):
         super().__init__(chessName = "瓢虫",id=6,
                          race = "insect",
                          star = 2,
@@ -350,7 +358,8 @@ class ladybug(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -385,7 +394,7 @@ class going_honey(skillInterface):
                                                                              statusDuration=3)
 
 class bee(chessInterface):
-    def __init__(self,position= [3,3]):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "蜜蜂",id=7,
                          race = "insect",
                          star = 2,
@@ -400,7 +409,8 @@ class bee(chessInterface):
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
         self.cd_counter = 300
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -428,7 +438,7 @@ class swallow(skillInterface):
 
 class swallower(chessInterface):
     #食人鱼
-    def __init__(self,position= [3,3],skill:swallow = swallow()):
+    def __init__(self,position = [3,3],skill:swallow = swallow()):
         super().__init__(chessName = "食人鱼",id=8,
                          race = "marine",
                          star = 2,
@@ -442,7 +452,8 @@ class swallower(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -494,7 +505,8 @@ class sea_hedgehog(chessInterface):
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,
             "dispersion_status": None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         self.cd_counter += 400 # 开战cd
@@ -548,7 +560,8 @@ class heal_deer(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -575,7 +588,8 @@ class monkey(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         
@@ -605,7 +619,8 @@ class hippo(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -642,7 +657,8 @@ class bear(chessInterface):
                          armor = 45,
                          health= 760,
                          skill = earth_shock())
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         self.statusDict = {'moving': None,
@@ -688,7 +704,8 @@ class butterfly(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         
@@ -735,7 +752,8 @@ class fireworm(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -770,7 +788,8 @@ class mantis(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         self.fakeRandom: float = 0
@@ -825,7 +844,8 @@ class scorpion(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -873,7 +893,8 @@ class anglerfish(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
     
@@ -897,7 +918,8 @@ class electric_eel(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -917,7 +939,8 @@ class crab(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -937,7 +960,8 @@ class monoceros(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -957,7 +981,8 @@ class turtle(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -980,7 +1005,8 @@ class elephant(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -1028,7 +1054,8 @@ class tiger(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -1058,7 +1085,8 @@ class unicorn_b(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         
@@ -1123,7 +1151,8 @@ class spider(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -1148,7 +1177,8 @@ class octopus(chessInterface):
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
@@ -1191,7 +1221,8 @@ class shark(chessInterface):
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None}
         self.skill = abyssBite(baseAttack= self.attack)
-        self.position = position
+        self.initialPosition = position
+        self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
     

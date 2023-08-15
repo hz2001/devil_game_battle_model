@@ -63,11 +63,13 @@ class chessInterface:
         self.skill = skill # 棋子技能
         self.evasion = evasion # 棋子闪避概率
         self.position = [3,3] # 棋子在棋盘上的位置, 默认位置是 【3，3】
+        self.initialPosition = [3,3] # 棋子在棋盘上的初始位置，每回合结束自动复原
         self.team = team # team 0 = 红方, team 1 = 蓝方
         self.teamDict: dict[int,chessInterface] = {}  # 己方棋子字典
         self.allChessDict: dict[int,chessInterface] = {} # 所有棋子字典，其实可以和上面的己方棋子字典合二为一
         self.statusDict = statusDict # 棋子状态栏
         self.movingSpeed = moving_speed
+        self.onField = False
 
         self.totalDamage:float = 0
         self.attack_counter:int = 0 # take track of when this chess can attack
@@ -99,6 +101,28 @@ class chessInterface:
             allChessDict (dict[int, chessInterface]): _description_
         """
         self.allChessDict = allChessDict
+    def reset(self):
+        self.resetPosition()
+        self.resetHealth()
+        self.resetStatus()
+        self.totalDamage = 0
+        self.cd_counter = 0
+        self.attack_counter = 0
+        print(self,f"被重置了，位置为{self.position},血量为{self.health}/{self.maxHP}")
+
+    def resetStatus(self):
+        for statusName in self.statusDict.keys():
+            self.statusDict[statusName] = None
+
+    def resetHealth(self):
+        self.health = deepcopy(self.maxHP)
+
+    def resetPosition(self):
+        self.position = deepcopy(self.initialPosition)
+
+    def setInitialPosition(self, position):
+        self.initialPosition = position
+        self.resetPosition()
 
     def can_move(self) -> bool:
         '''判定棋子是否可以移动'''
@@ -259,7 +283,7 @@ class chessInterface:
 
     def moveChessTo(self, currentTime:int,  newPosition: list[int]):
         '''
-        在棋子需要移动的时候调用这个方法
+        在棋子需要移动的时候调用这个方法, 来激活moving状态
         '''
         self.position = newPosition
         self.statusDict['moving'].activate(currentTime=currentTime)

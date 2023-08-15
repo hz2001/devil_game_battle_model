@@ -85,16 +85,23 @@ class battle:
 
     def add_chess_to_board(self, chessToBeAdded: chessInterface, finished = True):
         '''检测棋子的位置是否为正确位置，并且把新建棋子放在棋盘上'''
-        row = chessToBeAdded.position[0]
-        col = chessToBeAdded.position[1]
+
         if finished == False:
+            row = chessToBeAdded.initialPosition[0]
+            col = chessToBeAdded.initialPosition[1]
             if self.board[row][col] is not None:
+                if self.board[row][col] == chessToBeAdded:
+                    return
                 raise Exception(f"{chessToBeAdded}的位置已被{self.board[row][col]}占据，请更换位置后重试") 
-            if chessToBeAdded.team == 0 and chessToBeAdded.position[0]>=3:
-                raise Exception("请把红方棋子放置在前三排") 
-            elif chessToBeAdded.team == 1 and chessToBeAdded.position[0] <=2:
-                raise Exception("请把蓝方棋子放置在后三排") 
-            
+            if chessToBeAdded.team == 0 and chessToBeAdded.initialPosition[0]>=3:
+                print(chessToBeAdded.initialPosition)
+                raise Exception(f"请把红方棋子{chessToBeAdded}放置在前三排") 
+            elif chessToBeAdded.team == 1 and chessToBeAdded.initialPosition[0] <=2:
+                print(chessToBeAdded.initialPosition)
+                raise Exception(f"请把蓝方棋子{chessToBeAdded}放置在后三排") 
+        else:
+            row = chessToBeAdded.position[0]
+            col = chessToBeAdded.position[1]
         self.board[row][col] = chessToBeAdded
 
     def clear_position(self, position: list[int]):
@@ -189,6 +196,7 @@ class battle:
     
     # 对战
     def battle_with_skills(self):
+        self.board_print()
         current_time = 0
         while self.teamAlive(self.redTeamDict) and self.teamAlive(self.blueTeamDict):
             current_time += 5
@@ -230,6 +238,14 @@ class battle:
             print(f"{colored('红','red')}方获胜!")
         else:
             print(f"{colored('蓝','blue')}方获胜!")
+        
+        self.board_print()
+        for uniqueID, chess in self.allChessDict.items():
+            print(chess, chess.getTotalDamageDealt())
+        # reset everything 
+        for uid, chess in self.allChessDict.items():
+            chess.reset()
+            
         # print(self.allChessDict)
 
 
@@ -254,16 +270,15 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
-    blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
+    # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
+    redTeam = [rabbit(position=[2,2])]
+    # blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
+    blueTeam = [ant(position=[3,2])]
+
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
-    newBattle.board_print()
     # newBattle.battle_between_2(newBattle.redTeamChess[0], newBattle.blueTeamChess[0])
     newBattle.battle_with_skills()
-    print(newBattle.board_print())
-    for uniqueID, chess in newBattle.allChessDict.items():
-        print(chess, chess.getTotalDamageDealt())
 
 if __name__ == '__main__':
     main()
