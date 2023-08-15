@@ -1070,6 +1070,22 @@ class tiger(chessInterface):
 
 #insect
 ############################################################################################################
+# 独角仙
+class rebirth(skillInterface):
+    def __init__(self, skillName: str = "重生",
+                 cd: float = 999,
+                 duration: float = 0.5,
+                 type: str = "active",
+                 description: str = "重生") -> None:
+        super().__init__(skillName, cd, type, description)
+        self.duration = duration
+    
+    def cast(self, currentTime:int, caster:chessInterface, target: chessInterface):
+        target.statusDict['reviving'] = reviving(currentTime=currentTime,
+                                                     statusDuration=self.duration,
+                                                     statusOwner=target) 
+        
+        
 class unicorn_b(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "独角仙", id=25,
@@ -1080,7 +1096,7 @@ class unicorn_b(chessInterface):
                          attack_range = 4,
                          armor = 26,
                          health= 560,
-                         skill = None)
+                         skill = rebirth())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1089,6 +1105,51 @@ class unicorn_b(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        self.revived = False
+
+    def cast(self, currentTime: int):
+        self.skill.cast(currentTime=currentTime,caster=self,target=self)
+        return super().cast(implemented = True)
+    
+    def can_attack(self) -> bool:
+        if 'reviving' not in self.statusDict:
+            return super().can_attack()
+        else:
+            return False
+
+    def can_cast(self) -> bool:
+        if 'reviving' not in self.statusDict:
+            return super().can_cast()
+        else:
+            return False
+
+    def check_death(self) -> bool:
+        '''
+        检查当前棋子是否死亡，并且做出相应操作
+        '''
+        if self.health <= 0:
+            if self.revived:
+                if 'reviving' in self.statusDict:
+                    self.health = 1
+                    return False
+                else:
+                    # remove this chess from opponent's team list
+                    print()
+                    print(f"    {self} 已经被打败!")
+                    print()
+                    self.isDead = True # 标记死亡
+                    self.position=[-1,-1] # 移除棋盘
+                    # print(self.teamDict, self.uniqueID)
+                    del self.teamDict[self.uniqueID]
+                    return True
+            else:
+                # print('check_death:')
+                self.cast(currentTime=0)
+                self.health = 1
+                self.revived = True
+                return False
+        else:
+            return False
         
 ############################################################################################################
 class ensnarement(skillInterface):
