@@ -313,7 +313,7 @@ class wolfMinion(wolf):
         self.statusDict['summoned'] = summoned(statusDuration=10,
                                                currentTime=currentTime,
                                                statusOwner=self)
-        self.id = 28
+        self.id= 29
         self.allChessDict = allChessDict
         self.teamDict = teamDict
         
