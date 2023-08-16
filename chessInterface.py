@@ -102,6 +102,7 @@ class chessInterface:
         """
         self.allChessDict = allChessDict
     def reset(self):
+        self.isDead = False
         self.resetPosition()
         self.resetHealth()
         self.resetStatus()
