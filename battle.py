@@ -240,9 +240,17 @@ class battle:
         # reset everything 
         for uid, chess in self.allChessDict.items():
             chess.reset()
+        self.board_clear()
             
         # print(self.allChessDict)
+    def board_clear(self):
+        battle.board = [[None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
 
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None]]
 
 def main():
     # tested:{sea_hedgehog(position = [3,3]), # 海胆， 熊，蜜蜂，羊，螳螂, 蝎子，麋鹿
@@ -265,7 +273,7 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [wolf(position=[1,3])]
+    redTeam = [swallower(position=[1,3])]
     # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
     # redTeam = [rabbit(position=[2,2])]
     blueTeam = [rabbit(position=[3,2])]

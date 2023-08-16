@@ -40,7 +40,7 @@ class chessInterface:
                  id: int,
                  attack: int,
                  attack_interval: float,
-                 attack_range: int,
+                 attack_range: float,
                  armor: int,
                  health: float,
                  skill: skillInterface,
@@ -248,7 +248,7 @@ class chessInterface:
     def deal_damage_to(self,
                        opponent: chessInterface,
                        damage: float,
-                       currentTime: int) -> None:
+                       currentTime: int) -> bool:
         """这个方法只造成伤害，伤害是在调用这个方法之前就算好的。这个方法不改变任何值输入值，只改变目标血量和判定特殊情况。
 
         Args:
@@ -269,7 +269,10 @@ class chessInterface:
             opponent.statusDict['dispersion_status'].activate(currentTime=currentTime,
                                                               target = self,
                                                               damage = damage)
-        opponent.check_death()
+        if opponent.check_death():
+            return True
+        else:
+            return False
         
 
     def heal(self, amount)->None:
@@ -419,7 +422,7 @@ class chessInterface:
 
     def start_moving(self, currentTime:int, board:list[list[chessInterface]], moving):
         action = self.get_enemy(board)
-        if action['target_distance'] is not None and action['target_distance'] > 1:
+        if action['target_distance'] is not None and action['target_distance'] > self.attack_range: # TODO 
             self.statusDict['moving'] = moving(statusOwner=self, 
                                                 currentTime=currentTime, 
                                                 newPosition=action['target_position'])
