@@ -334,9 +334,9 @@ class wolfMinion(wolf):
 # insect
 ############################################################################################################
 class transformation(skillInterface):
-    def __init__(self,attackAlt = 100, armorAlt = -10, newAttackRange = 3.5) -> None:
+    def __init__(self,attackAlt = 110, armorAlt = -10, newAttackRange = 3.5) -> None:
         super().__init__(skillName="变身",
-                        cd=9,
+                        cd=7,
                         type="active",
                         description="瓢虫张开翅膀飞翔，增加攻击距离以及巨量攻击伤害，但是防御力降低",
                         castRange=100)
