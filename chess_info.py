@@ -61,8 +61,8 @@ class rabbit(chessInterface):
                          attack = 21,
                          attack_interval=0.9,
                          attack_range = 1,
-                         armor=9,
-                         health=318,
+                         armor=7,
+                         health=250,
                          skill = huishoutao())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
