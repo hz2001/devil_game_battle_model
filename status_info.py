@@ -20,10 +20,11 @@ class moving(statusInterface):
                  currentTime: int,
                  statusOwner: chessInterface,
                  newPosition:list[int],
+                 statusDuration: float = 0.3
                  ) -> None:
         super().__init__(statusName = "移动",
                          currentTime = currentTime,
-                         statusDuration=0.3,
+                         statusDuration=statusDuration,
                          statusType="moving")
         self.statusOwner = statusOwner
         self.activate(currentTime)
@@ -36,7 +37,7 @@ class moving(statusInterface):
             self.statusOwner.statusDict['moving'] = None
             return False
         else:
-            # 移动，跳过 本次攻击/移动判定
+            # 移动，跳过 本次攻击 施法判定在施法的时候进行状态的判定
             self.statusOwner.attack_counter = 0
             return True
 # 变羊
@@ -119,7 +120,6 @@ class taunted(statusInterface):
             return False
         else:
             # 仍然被嘲讽，跳过 移动 和 技能判定， 攻击判定继续
-            self.statusOwner.cd_counter -= 5
             return True
 
 # 沉默
@@ -139,7 +139,6 @@ class silenced(statusInterface):
             return False
         else:
             # 仍然被沉默，跳过 技能判定，攻击判定继续
-            self.statusOwner.cd_counter -= 5
             return True
 
 # 破坏 （被动无效化）
@@ -159,8 +158,6 @@ class broken(statusInterface):
             return False
         else:
             # 仍然被缴械，如果有被动技能，跳过被动技能判定
-            if self.statusOwner.skill.type == 'passive':
-                self.statusOwner.cd_counter -= 5
             return True
 
 class attack_interval_change(statusInterface):

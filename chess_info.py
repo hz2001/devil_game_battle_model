@@ -156,18 +156,30 @@ class ant(chessInterface):
 
 ############################################################################################################
 # 小丑鱼
+class fearMove(skillInterface):
+    def __init__(self,
+                 cd:float = 0) -> None:
+        super().__init__(skillName = "孩怕",
+                         cd = cd,
+                         type = "passive",
+                         description= f"受到攻击后会害怕，并且向后撤")
+    
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
+        print(f"{currentTime/100}   {caster}{self}了,向后退了一格")
+        caster.moveChessTo()
+
 class littleUglyFish(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "小丑鱼",
                          id=3,
                          race = "marine",
                          star = 1,
-                         attack = 21,
+                         attack = 30,
                          attack_interval=0.9,
                          attack_range = 2,
                          armor=13,
                          health=216,
-                         skill = None)
+                         skill = fearMove())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,

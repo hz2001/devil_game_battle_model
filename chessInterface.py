@@ -417,6 +417,13 @@ class chessInterface:
         self.moveChessTo(currentTime=currentTime,newPosition=new_pos[direction](self.position[0],self.position[1]))
         self.print_move_info(direction,currentTime)
 
+    def start_moving(self, currentTime:int, board:list[list[chessInterface]], moving):
+        action = self.get_enemy(board)
+        if action['target_distance'] is not None and action['target_distance'] > 1:
+            self.statusDict['moving'] = moving(statusOwner=self, 
+                                                currentTime=currentTime, 
+                                                newPosition=action['target_position'])
+            self.move_to(action['direction'],currentTime=currentTime)
 
     def print_move_info(self,direction: str, currentTime: int):
         # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 
