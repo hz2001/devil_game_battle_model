@@ -349,6 +349,31 @@ class bleeding(statusInterface):
                 self.caster.deal_damage_to(self.statusOwner, self.instanceDamage, currentTime)
             return True
 
+class reviving(statusInterface):
+    def __init__(self, 
+                 currentTime: int, 
+                 statusDuration: float, 
+                 statusOwner: chessInterface) -> None:
+        super().__init__(statusName = "重生中",
+                         currentTime = currentTime,
+                         statusDuration = statusDuration,
+                         statusType = "status")
+        self.statusOwner = statusOwner 
+        self.timeElapsed = 0
+        print(f"    {statusOwner} 复活中")
+    def activate(self, currentTime: float) -> bool:
+        if self.timeElapsed > self.statusDuration:
+            self.statusOwner.statusDict.pop('reviving', None)
+            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
+            print(f"{currentTime/100}   {self.statusOwner}已经复活, 护甲增加")
+            self.statusOwner.health = self.statusOwner.maxHP
+            self.statusOwner.armor = 100
+            return False
+        else:
+            # print(self.timeElapsed,self.statusDuration)
+            self.timeElapsed += 5
+            return True
+
 
 
 

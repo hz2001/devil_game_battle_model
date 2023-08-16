@@ -270,11 +270,12 @@ def main():
     #               swallower() }
     
     newBattle = battle()
+    redTeam = [scorpion(position=[1,1]),scorpion(position=[2,2]), heal_deer(position=[1,3])]
     # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
-    redTeam = [rabbit(position=[2,2])]
+    # redTeam = [rabbit(position=[2,2])]
+    blueTeam = [unicorn_b(position=[3,2])]
     # blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
-    blueTeam = [ant(position=[3,2])]
-
+    # blueTeam = [ant(position=[3,2])]
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     # newBattle.battle_between_2(newBattle.redTeamChess[0], newBattle.blueTeamChess[0])
