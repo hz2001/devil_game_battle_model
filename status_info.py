@@ -20,7 +20,7 @@ class moving(statusInterface):
                  currentTime: int,
                  statusOwner: chessInterface,
                  newPosition:list[int],
-                 statusDuration: float = 0.3
+                 statusDuration: float = 0.5
                  ) -> None:
         super().__init__(statusName = "移动",
                          currentTime = currentTime,
