@@ -706,9 +706,9 @@ class butterfly(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
         
-    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> None:
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
         self.skill.cast(currentTime=currentTime,caster = self, target =opponent)
-        super().do_attack(opponent, currentTime, coefficient)
+        return super().do_attack(opponent, currentTime, coefficient)
 
 ############################################################################################################
 # 萤火虫
@@ -791,7 +791,7 @@ class mantis(chessInterface):
         chessInterface.uniqueID += 1
         self.fakeRandom: float = 0
 
-    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> None:
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
         if random() + self.fakeRandom > 1-self.skill.chance: # 1 - 0.2 = 0.8
             coefficient = self.skill.damageCoefficient
             self.fakeRandom = 0 # reset the fakeRandom
@@ -799,7 +799,7 @@ class mantis(chessInterface):
         else:
             self.fakeRandom += 0.02
             # print("      ",self, self.fakeRandom
-        super().do_attack(opponent,currentTime, coefficient)
+        return super().do_attack(opponent,currentTime, coefficient)
 
 
 ############################################################################################################
@@ -846,9 +846,10 @@ class scorpion(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
-    def do_attack(self, opponent: chessInterface,currentTime: int, coefficient: float = 1) -> None:
-        super().do_attack(opponent, currentTime, coefficient)
+    def do_attack(self, opponent: chessInterface,currentTime: int, coefficient: float = 1) -> float:
+        damage = super().do_attack(opponent, currentTime, coefficient)
         self.skill.cast(currentTime=currentTime, caster = self, target = opponent)
+        return damage
 
 
 #marine
@@ -1184,7 +1185,7 @@ class ensnarement(skillInterface):
             if chess.team != caster.team and chess.attack > highestAttack:
                 target = chess
         pos = self.move_to_target(caster = caster, target= target)
-        caster.moveChessTo(currentTime,pos)
+        caster.position = pos
         # TODO: 更新棋盘
         if target.statusDict['disarmed'] is not None:
             #  增加缴械时间
@@ -1287,5 +1288,5 @@ class shark(chessInterface):
     
     def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> None:
         self.skill.cast(currentTime=currentTime,caster = self, target = opponent)
-        super().do_attack(opponent, currentTime, coefficient)
+        return super().do_attack(opponent, currentTime, coefficient)
         
