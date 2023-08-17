@@ -108,7 +108,7 @@ class taunted(statusInterface):
     def __init__(self, currentTime: int,
                  statusDuration: float,
                  statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "沉默",
+        super().__init__(statusName = "嘲讽",
                          currentTime = currentTime,
                          statusDuration=statusDuration,
                          statusType = "disable")
@@ -201,7 +201,7 @@ class summoned(statusInterface):
         if currentTime > self.statusEnd:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, {self.statusOwner}死掉")
             self.statusOwner.health = -1
-            self.statusOwner.check_death()
+            self.statusOwner.check_death(currentTime = currentTime)
 
 # 反伤
 class dispersion_status(statusInterface):
@@ -284,7 +284,7 @@ class vulnerable(statusInterface):
                          statusType = "debuff")
         self.statusOwner = statusOwner  
         self.amplification = amplification
-        print(f"    {statusOwner} 伤害加深 {amplification*100}%")
+        print(f"    {statusOwner} 被伤害加深 {amplification*100}%")
 
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
