@@ -41,7 +41,7 @@ class chessInterface:
                  id: int,
                  attack: int,
                  attack_interval: float,
-                 attack_range: int,
+                 attack_range: float,
                  armor: int,
                  health: float,
                  skill: skillInterface,
@@ -249,7 +249,7 @@ class chessInterface:
     def deal_damage_to(self,
                        opponent: chessInterface,
                        damage: float,
-                       currentTime: int) -> None:
+                       currentTime: int) -> bool:
         """这个方法只造成伤害，伤害是在调用这个方法之前就算好的。这个方法不改变任何值输入值，只改变目标血量和判定特殊情况。
 
         Args:
@@ -270,7 +270,10 @@ class chessInterface:
             opponent.statusDict['dispersion_status'].activate(currentTime=currentTime,
                                                               target = self,
                                                               damage = damage)
-        opponent.check_death()
+        if opponent.check_death():
+            return True
+        else:
+            return False
         
 
     def heal(self, amount)->None:
@@ -437,6 +440,13 @@ class chessInterface:
         self.moveChessTo(currentTime=currentTime,newPosition=new_pos[direction](self.position[0],self.position[1]))
         self.print_move_info(direction,currentTime)
 
+    def start_moving(self, currentTime:int, board:list[list[chessInterface]], moving):
+        action = self.get_enemy(board)
+        if action['target_distance'] is not None and action['target_distance'] > self.attack_range: # TODO 
+            self.statusDict['moving'] = moving(statusOwner=self, 
+                                                currentTime=currentTime, 
+                                                newPosition=action['target_position'])
+            self.move_to(action['direction'],currentTime=currentTime)
 
     def print_move_info(self,direction: str, currentTime: int):
         # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 

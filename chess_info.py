@@ -60,9 +60,9 @@ class rabbit(chessInterface):
                          star = 1,
                          attack = 21,
                          attack_interval=0.9,
-                         attack_range = 1,
-                         armor=9,
-                         health=318,
+                         attack_range = 1.5,
+                         armor=7,
+                         health=250,
                          skill = huishoutao())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -130,7 +130,7 @@ class ant(chessInterface):
                          star = 1,
                          attack = 20,
                          attack_interval = 1,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor=10,
                          health=180,
                          skill = None)
@@ -156,18 +156,30 @@ class ant(chessInterface):
 
 ############################################################################################################
 # 小丑鱼
+class fearMove(skillInterface):
+    def __init__(self,
+                 cd:float = 0) -> None:
+        super().__init__(skillName = "孩怕",
+                         cd = cd,
+                         type = "passive",
+                         description= f"受到攻击后会害怕，并且向后撤")
+    
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
+        print(f"{currentTime/100}   {caster}{self}了,向后退了一格")
+        caster.moveChessTo()
+
 class littleUglyFish(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "小丑鱼",
                          id=3,
                          race = "marine",
                          star = 1,
-                         attack = 21,
+                         attack = 30,
                          attack_interval=0.9,
                          attack_range = 2,
                          armor=13,
                          health=216,
-                         skill = None)
+                         skill = fearMove())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -283,7 +295,7 @@ class wolf(chessInterface):
                          star = 2,
                          attack = 45,
                          attack_interval=0.85,
-                         attack_range = 1, 
+                         attack_range = 1.5, 
                          armor=21,
                          health=520,
                          skill = skill)
@@ -313,7 +325,7 @@ class wolfMinion(wolf):
         self.statusDict['summoned'] = summoned(statusDuration=10,
                                                currentTime=currentTime,
                                                statusOwner=self)
-        self.id = 28
+        self.id= 29
         self.allChessDict = allChessDict
         self.teamDict = teamDict
         
@@ -350,7 +362,7 @@ class ladybug(chessInterface):
                          star = 2,
                          attack = 21,
                          attack_interval=0.8,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor=25,
                          health=478,
                          skill = transformation()) # 之前太强了，削弱一些
@@ -400,7 +412,7 @@ class bee(chessInterface):
                          star = 2,
                          attack = 36,
                          attack_interval=1.1,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor=20,
                          health=380,
                          skill = going_honey())
@@ -428,13 +440,13 @@ class swallow(skillInterface):
                  description: str = "食人鱼吞噬其杀掉的敌人,获得并治疗对手的50%最大生命值的血量") -> None:
         super().__init__(skillName, cd, type, description)
 
-    def cast(self, currentTime:int, caster: chessInterface, opponent: chessInterface):
+    def cast(self, currentTime:int, caster: chessInterface, target: chessInterface):
         '''
         施法者获得攻击目标 50% 的属性'''
         print(f"{currentTime/100}   {caster}used{self}")
-        caster.health += opponent.maxHP * 0.5
-        caster.maxHP += opponent.maxHP * 0.5
-        caster.attack += opponent.attack * 0.3
+        caster.health += target.maxHP * 0.5
+        caster.maxHP += target.maxHP * 0.5
+        caster.attack += target.attack * 0.3
 
 class swallower(chessInterface):
     #食人鱼
@@ -444,7 +456,7 @@ class swallower(chessInterface):
                          star = 2,
                          attack = 88,
                          attack_interval=1.2,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor=20,
                          health=380,
                          skill = skill)
@@ -457,25 +469,10 @@ class swallower(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
-    def deal_damage_to(self,
-                       opponent: chessInterface,
-                       amount: float,
-                       currentTime: int,
-                       coefficient: float = 1.0) -> float:
-        damage = amount*coefficient
-        opponent.health -= damage
-        self.totalDamage += damage
-        # check receiver status (比如对手是海胆, id=9，就需要查看对方是否有反伤开启，对手是犀牛，就查看自己是否是昆虫等)
-        if not self.id == 9 and opponent.id != 9 and \
-            opponent.statusDict['dispersion_status'] is not None:
-            # 如果两个海胆在场上，会有无限loop 的情况 所以加一个条件
-            # print(damage)
-            opponent.statusDict['dispersion_status'].activate(currentTime=currentTime,
-                                                              target = opponent,
-                                                              damage = damage)
-        if opponent.check_death():
+    def deal_damage_to(self, opponent: chessInterface, damage: float, currentTime: int) -> bool:
+        if super().deal_damage_to(opponent, damage, currentTime):
             self.skill.cast(currentTime, caster=self, target = opponent)
-        return damage
+
 
 ############################################################################################################
 # 海胆技能
@@ -496,7 +493,7 @@ class sea_hedgehog(chessInterface):
                          star = 2,
                          attack = 20,
                          attack_interval=1.0,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor=3,
                          health=800,
                          skill = dispersion_skill())
@@ -611,7 +608,7 @@ class hippo(chessInterface):
                          star = 3,
                          attack = 68,
                          attack_interval=1.7,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 91,
                          health= 1250,
                          skill = antiInsect())
@@ -653,7 +650,7 @@ class bear(chessInterface):
                          star = 3,
                          attack = 95,
                          attack_interval=0.95,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 45,
                          health= 760,
                          skill = earth_shock())
@@ -780,7 +777,7 @@ class mantis(chessInterface):
                          star = 3,
                          attack = 140,
                          attack_interval=0.85,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 78,
                          health= 270,
                          skill = skill )
@@ -836,7 +833,7 @@ class scorpion(chessInterface):
                          star = 3,
                          attack = 58,
                          attack_interval=1.5,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 32,
                          health= 840,
                          skill = skill)
@@ -931,7 +928,7 @@ class crab(chessInterface):
                          star = 3,
                          attack = 75,
                          attack_interval=1.3,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 35,
                          health= 880,
                          skill = None)
@@ -952,7 +949,7 @@ class monoceros(chessInterface):
                          star = 3,
                          attack = 88,
                          attack_interval=0.95,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 27,
                          health= 680,
                          skill = None)
@@ -973,7 +970,7 @@ class turtle(chessInterface):
                          star = 3,
                          attack = 50,
                          attack_interval=1.0,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 81,
                          health= 750,
                          skill = None)
@@ -1046,7 +1043,7 @@ class tiger(chessInterface):
                          star = 4,
                          attack = 150,
                          attack_interval=0.7,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 43,
                          health= 1040,# 有点低
                          skill = bite())
@@ -1204,7 +1201,7 @@ class spider(chessInterface):
                          star = 4,
                          attack = 98, # 有点低
                          attack_interval=0.85,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 65,
                          health= 1270,
                          skill = ensnarement())
@@ -1273,7 +1270,7 @@ class shark(chessInterface):
                          star = 4,
                          attack = 80, # 有点低
                          attack_interval=0.5,
-                         attack_range = 1,
+                         attack_range = 1.5,
                          armor = 60,
                          health= 1200,
                          skill = None)

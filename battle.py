@@ -226,13 +226,8 @@ class battle:
                         opponent = attackerChess.get_hate_mechanism()
                         attackerChess.do_attack(currentTime=current_time, opponent=opponent)
                 elif attackerChess.can_move(): # 移动判定
-                    action = attackerChess.get_enemy(self.board)
-                    if action['target_distance'] is not None and action['target_distance'] > 1:
-                        attackerChess.statusDict['moving'] = moving(statusOwner=attackerChess, 
-                                                                    currentTime=current_time, 
-                                                                    newPosition=action['target_position'])
-                        attackerChess.move_to(action['direction'],currentTime=current_time)
-                        self.update_chess_position_onboard(chessToBeMoved=attackerChess)
+                    attackerChess.start_moving(currentTime= current_time, board = self.board,moving=moving)
+                    self.update_chess_position_onboard(chessToBeMoved=attackerChess)
                         # self.board_print()
         if self.teamAlive(self.redTeamDict):
             print(f"{colored('红','red')}方获胜!")
@@ -245,9 +240,17 @@ class battle:
         # reset everything 
         for uid, chess in self.allChessDict.items():
             chess.reset()
+        self.board_clear()
             
         # print(self.allChessDict)
+    def board_clear(self):
+        battle.board = [[None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
 
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None]]
 
 def main():
     # tested:{sea_hedgehog(position = [3,3]), # 海胆， 熊，蜜蜂，羊，螳螂, 蝎子，麋鹿
@@ -270,10 +273,10 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [scorpion(position=[0,0])]
+    redTeam = [swallower(position=[1,3])]
     # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
     # redTeam = [rabbit(position=[2,2])]
-    blueTeam = [unicorn_b(position=[5,4])]
+    blueTeam = [rabbit(position=[3,2])]
     # blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
     # blueTeam = [ant(position=[3,2])]
     newBattle.addRedTeam(redTeam)
