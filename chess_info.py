@@ -1120,7 +1120,7 @@ class unicorn_b(chessInterface):
         else:
             return False
 
-    def check_death(self) -> bool:
+    def check_death(self, currentTime:int) -> bool:
         '''
         检查当前棋子是否死亡，并且做出相应操作
         '''
@@ -1130,6 +1130,7 @@ class unicorn_b(chessInterface):
                     self.health = 1
                     return False
                 else:
+                    self.deathTime = currentTime
                     # remove this chess from opponent's team list
                     print()
                     print(f"    {self} 已经被打败!")
