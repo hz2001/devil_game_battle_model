@@ -22,7 +22,11 @@ class battle:
         移动判定:
             判定当前棋子需要移动到什么位置 并且移动棋子 正在移动的棋子会有0.3秒攻击/技能滞后
     '''
-    board:list[list[chessInterface]] = [[None,None,None,None,None],
+
+    def __init__(self) -> None:
+        self.redTeamDict:dict[int,chessInterface] = {}
+        self.blueTeamDict:dict[int,chessInterface] = {}
+        self.board:list[list[chessInterface]] = [[None,None,None,None,None],
                                         [None,None,None,None,None],
                                         [None,None,None,None,None],
 
@@ -30,18 +34,24 @@ class battle:
                                         [None,None,None,None,None],
                                         [None,None,None,None,None]]
 
-    #  遗留物品，其实并不需要这个作为判定手段，因为有更简单的判定方法
-    redTeamDict:dict[int,chessInterface] = {}
-    blueTeamDict:dict[int,chessInterface] ={}
-
-    redTeamAliveNO:int = 0
-    blueTeamAliveNO:int = 0
-
-    allChessDict:dict[int,chessInterface] = {}
-
-    def __init__(self) -> None:
+        #  遗留物品，其实并不需要这个作为判定手段，因为有更简单的判定方法
         self.redTeamDict:dict[int,chessInterface] = {}
-        self.blueTeamDict:dict[int,chessInterface] = {}
+        self.blueTeamDict:dict[int,chessInterface] ={}
+
+        self.redTeamAliveNO:int = 0
+        self.blueTeamAliveNO:int = 0
+
+        self.allChessDict:dict[int,chessInterface] = {}
+    def board_clear(self):
+        """重置棋盘
+        """
+        battle.board = [[None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
+
+                    [None,None,None,None,None],
+                    [None,None,None,None,None],
+                    [None,None,None,None,None]]
 
     def addRedTeam(self, redTeam:list[chessInterface]):
         for chess in redTeam:
@@ -241,16 +251,57 @@ class battle:
         for uid, chess in self.allChessDict.items():
             chess.reset()
         self.board_clear()
+        
             
         # print(self.allChessDict)
-    def board_clear(self):
-        battle.board = [[None,None,None,None,None],
-                    [None,None,None,None,None],
-                    [None,None,None,None,None],
 
-                    [None,None,None,None,None],
-                    [None,None,None,None,None],
-                    [None,None,None,None,None]]
+    def battle_with_skills_test(self, recordDict: dict):
+        # 对战测试版，会记录棋子的详细信息
+        self.board_print()
+        current_time = 0
+        while self.teamAlive(self.redTeamDict) and self.teamAlive(self.blueTeamDict):
+            current_time += 5
+
+            for (attackerID, attackerChess) in self.allChessDict.copy().items():
+                if self.update_chess_position_onboard(chessToBeMoved=attackerChess):
+                    # print(self.board_print())
+                    pass
+                if attackerChess.isDead:
+                    
+                    continue
+                # print(current_time/100, attackerChess, id(attackerChess.statusDict))
+                # 根据时间更新剩余间隔
+                attackerChess.attack_counter += 5
+                attackerChess.cd_counter += 5
+                # 进行状态判定
+                attackerChess.activate_status(currentTime=current_time)
+                #进行仇恨判定
+                # opponentDict = self.get_opponent_dict(attackerChess)
+                if attackerChess.enemy_in_cast_range():
+                    if attackerChess.can_cast(): # 技能判定
+                        # 是时候放技能了！
+                        attackerChess.cast(currentTime=current_time)
+                        # TODO 漏洞：为了减小算法难度，计算对手状态的效果等到loop到该棋子的时候再完成，但是这样会导致如果有棋子在这之前对其发动攻击，则该伤害无法计算buff/debuff
+                if attackerChess.enemy_in_attack_range(): # 如果敌人在攻击范围内则不移动
+                    if attackerChess.can_attack(): # 攻击判定
+                        opponent = attackerChess.get_hate_mechanism()
+                        attackerChess.do_attack(currentTime=current_time, opponent=opponent)
+                elif attackerChess.can_move(): # 移动判定
+                    attackerChess.start_moving(currentTime= current_time, board = self.board,moving=moving)
+                    self.update_chess_position_onboard(chessToBeMoved=attackerChess)
+                        # self.board_print()
+        if self.teamAlive(self.redTeamDict):
+            print(f"{colored('红','red')}方获胜!")
+        else:
+            print(f"{colored('蓝','blue')}方获胜!")
+        
+        self.board_print()
+        for uniqueID, chess in self.allChessDict.items():
+            print(chess, chess.getTotalDamageDealt())
+        # reset everything 
+        for uid, chess in self.allChessDict.items():
+            chess.reset()
+        self.board_clear()
 
 def main():
     # tested:{sea_hedgehog(position = [3,3]), # 海胆， 熊，蜜蜂，羊，螳螂, 蝎子，麋鹿
