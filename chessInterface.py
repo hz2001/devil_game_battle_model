@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 from skillInterface import skillInterface
 from statusInterface import statusInterface
 from termcolor import colored
@@ -142,6 +143,9 @@ class chessInterface:
         return False
     
     def enemy_in_attack_range(self) -> bool:
+        '''
+        判断在攻击范围内有无敌方单位
+        '''
         return sorted(self.opponent_distances())[0] <= self.attack_range
 
 
@@ -157,6 +161,9 @@ class chessInterface:
             return self.attack_counter >= self.attack_interval
     
     def enemy_in_cast_range(self) -> bool:
+        '''
+        判断在施法范围内有无敌方单位
+        '''
         if self.skill is None:
             return False
         if hasattr(self.skill,'castRange'):
@@ -285,7 +292,9 @@ class chessInterface:
         
 
     def heal(self, amount)->None:
-        # 当棋子进行治疗的时候调用这个方法
+        '''
+        当棋子进行治疗的时候调用这个方法
+        '''
         final_health = self.health + amount
         if final_health >= self.maxHP:
             self.health = self.maxHP
@@ -316,7 +325,7 @@ class chessInterface:
         return surrounding
 
     def opponent_ids(self) -> list[int]:
-        '''返回所有对方棋子的距离和chess的 dict'''
+        '''返回所有对方棋子的id的 list'''
         return [uniqueID for (uniqueID,chess) in self.allChessDict.items() if chess.team != self.team]
 
     def opponent_distances(self) -> dict[float, chessInterface]:
@@ -339,10 +348,7 @@ class chessInterface:
             try:
                 if board[curr_pos[0]][curr_pos[1]] is None or step == 0:
                     if distance[curr_pos[0]][curr_pos[1]] > step:
-                        # print(distance[curr_pos[0]][curr_pos[1]])
                         distance[curr_pos[0]][curr_pos[1]] = step
-                        # print(distance[curr_pos[0]][curr_pos[1]])
-                        # distance_print(distance)
                         bfs(step + 1, [curr_pos[0],curr_pos[1]-1]) # 上
                         bfs(step + 1, [curr_pos[0],curr_pos[1]+1]) # 下
                         bfs(step + 1, [curr_pos[0]-1,curr_pos[1]]) # 左
@@ -368,7 +374,11 @@ class chessInterface:
 
     def get_enemy(self,board:list[list[chessInterface]])->dict[str, any]:
         '''
-        返回棋子最近敌人距离和方向
+        返回棋子 移动距离最近的敌人\n
+        {target_distance:移动距离,\n 
+        target_position:目标位置,\n
+        target:目标,\n
+        direction:方向}
         '''
         def bfs_queue(source_pos:list[int]): # queue实现bfs
             '''
@@ -381,10 +391,17 @@ class chessInterface:
             queue = Queue()
             
             # 棋子初始移动方向
-            queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上 
-            queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
-            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
-            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
+            # queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上 
+            # queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
+            # queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
+            # queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
+            directions = [{'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'},
+                          {'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'},
+                          {'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'},
+                          {'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}]
+            while directions: # 路径探索方向随机化
+                pos_direction = directions.pop(random.randrange(len(directions)))
+                queue.put({'step':1, 'pos':pos_direction['pos'], 'direction':pos_direction['direction']})
 
             # 优先处理距离棋子距离为1的格，然后2，3，4，以此类推
             while queue.not_empty:
@@ -400,10 +417,18 @@ class chessInterface:
                     if chess is None: # path reached another chess
                         if distance[curr_pos[0]][curr_pos[1]] > step: # 更新 棋子与当前格 的最短移动距离
                             distance[curr_pos[0]][curr_pos[1]] = step
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
+                            directions = [{'pos':[curr_pos[0]-1,curr_pos[1]]},
+                                        {'pos':[curr_pos[0]+1,curr_pos[1]]},
+                                        {'pos':[curr_pos[0],curr_pos[1]-1]},
+                                        {'pos':[curr_pos[0],curr_pos[1]+1]}]
+                            while directions: # 路径探索方向随机化
+                                pos_direction = directions.pop(random.randrange(len(directions)))
+                                queue.put({'step':step + 1, 'pos':pos_direction['pos'], 'direction':direction})
+
                     elif chess.team != self.team: # 发现距离棋子 移动距离最近 的敌方棋子
                         return {'target_distance':step, 'target_position':curr_pos, 'target':chess, 'direction':direction}
                 except IndexError: # 寻路超出棋盘范围
@@ -416,10 +441,10 @@ class chessInterface:
 
     def move_to(self,
             direction: str,
-            currentTime: int,
-            coefficient: float = 1.0) -> None:
-        """在棋子需要攻击的时候调用这个方法
-        """
+            currentTime: int) -> None:
+        '''
+        棋子往{direction}方向移动一格
+        '''
         new_pos = {
             'up':lambda x,y: [x-1,y],
             'down':lambda x,y: [x+1,y],
@@ -430,6 +455,9 @@ class chessInterface:
         self.print_move_info(direction,currentTime)
 
     def start_moving(self, currentTime:int, board:list[list[chessInterface]], moving):
+        '''
+        棋子开始移动
+        '''
         action = self.get_enemy(board)
         if action['target_distance'] is not None and action['target_distance'] > self.attack_range: # TODO 
             self.statusDict['moving'] = moving(statusOwner=self, 
