@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 from skillInterface import skillInterface
 from statusInterface import statusInterface
 from termcolor import colored
@@ -369,10 +370,18 @@ class chessInterface:
             queue = Queue()
             
             # 棋子初始移动方向
-            queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上 
-            queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
-            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
-            queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
+            # queue.put({'step':1, 'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'}) # 上 
+            # queue.put({'step':1, 'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'}) # 下
+            # queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'}) # 左
+            # queue.put({'step':1, 'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}) # 右
+            directions = [{'pos':[source_pos[0]-1,source_pos[1]], 'direction':'up'},
+                          {'pos':[source_pos[0]+1,source_pos[1]], 'direction':'down'},
+                          {'pos':[source_pos[0],source_pos[1]-1], 'direction':'left'},
+                          {'pos':[source_pos[0],source_pos[1]+1], 'direction':'right'}]
+            while directions:
+                pos_direction = directions.pop(random.randrange(len(directions)))
+                queue.put({'step':1, 'pos':pos_direction['pos'], 'direction':pos_direction['direction']})
+                # print({'step':1, 'pos':pos_direction['pos'], 'direction':pos_direction['direction']})
 
             # 优先处理距离棋子距离为1的格，然后2，3，4，以此类推
             while queue.not_empty:
@@ -388,17 +397,28 @@ class chessInterface:
                     if chess is None: # path reached another chess
                         if distance[curr_pos[0]][curr_pos[1]] > step: # 更新 棋子与当前格 的最短移动距离
                             distance[curr_pos[0]][curr_pos[1]] = step
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
-                            queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0]-1,curr_pos[1]], 'direction':direction}) # 上
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0]+1,curr_pos[1]], 'direction':direction}) # 下
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]-1], 'direction':direction}) # 左
+                            # queue.put({'step':step + 1, 'pos':[curr_pos[0],curr_pos[1]+1], 'direction':direction}) # 右
+                            directions = [{'pos':[curr_pos[0]-1,curr_pos[1]]},
+                                        {'pos':[curr_pos[0]+1,curr_pos[1]]},
+                                        {'pos':[curr_pos[0],curr_pos[1]-1]},
+                                        {'pos':[curr_pos[0],curr_pos[1]+1]}]
+                            while directions:
+                                pos_direction = directions.pop(random.randrange(len(directions)))
+                                queue.put({'step':step + 1, 'pos':pos_direction['pos'], 'direction':direction})
+                                # print({'step':step + 1, 'pos':pos_direction['pos'], 'direction':direction})
+
                     elif chess.team != self.team: # 发现距离棋子 移动距离最近 的敌方棋子
                         return {'target_distance':step, 'target_position':curr_pos, 'target':chess, 'direction':direction}
                 except IndexError: # 寻路超出棋盘范围
+                    # print(curr_pos)
                     continue
                 except Empty: # queue为空
                     break
             return {'target_distance':None, 'target_position':None, 'target':None, 'direction':None}
+        # print(bfs_queue(self.position))
         return bfs_queue(self.position)
 
 
