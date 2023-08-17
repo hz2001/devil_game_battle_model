@@ -151,6 +151,9 @@ class ant(chessInterface):
         '''
         self.skill.cast(currentTime,caster = self,target=self)
         # super().cast(implemented = True)
+    def reset(self, test=False):
+        threeStinkers.ant_count = 0 # 不重置的话在进行新游戏的时候会不停增加，导致蚂蚁无敌。
+        return super().reset(test)
 
 ############################################################################################################
 # 小丑鱼
@@ -163,8 +166,22 @@ class fearMove(skillInterface):
                          description= f"受到攻击后会害怕，并且向后撤")
     
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
+        position = target.position
         print(f"{currentTime/100}   {caster}{self}了,向后退了一格")
-        caster.moveChessTo()
+        row = position[0]
+        col = position[1]
+        if row > caster.position[0] and caster.position[0] > 0:
+            caster.position[0] -= 1
+            return
+        elif row < caster.position[0] and caster.position[0] < 5:
+            caster.position[0] += 1
+            return
+        if col > caster.position[1] and caster.position[1] > 0:
+            caster.position[1] -= 1
+            return
+        elif col < caster.position[1] and caster.position[1] < 4:
+            caster.position[1] += 1
+            return
 
 class littleUglyFish(chessInterface):
     def __init__(self,position = [3,3]):
@@ -172,11 +189,11 @@ class littleUglyFish(chessInterface):
                          id=3,
                          race = "marine",
                          star = 1,
-                         attack = 30,
+                         attack = 33,
                          attack_interval=0.9,
                          attack_range = 2,
                          armor=13,
-                         health=216,
+                         health=252,
                          skill = fearMove())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -186,6 +203,10 @@ class littleUglyFish(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        
+    def cast(self, currentTime: int, target: chessInterface):
+        self.skill.cast(currentTime=currentTime, caster = self, target = target)
+        return super().cast(currentTime, implemented = True)
 
 # 2星卡
 # mammal
@@ -635,7 +656,7 @@ class earth_shock(skillInterface):
         caster.cd_counter = 0 # reset the counter for this skill
         print(f"{currentTime/100}  {caster}使用了{self}")
         for (chessID,chess) in caster.allChessDict.items():
-            if chess.team != caster.team and chess.position in caster.get_surrounding(1):
+            if chess.team != caster.team and chess.position in caster.get_surrounding(1) and not chess.isDead:
                 chess.statusDict['stunned'] = stunned(statusOwner=chess,
                                                       currentTime=currentTime,
                                                       statusDuration=2.5)
@@ -727,7 +748,7 @@ class holyLight(skillInterface):
         print(f"{currentTime}  {caster}对身旁半径为{self.diameter}的范围释放了{self}")
         for (uniqueID, chess) in caster.allChessDict.items():
             if dist(chess.position, caster.position) < self.diameter:
-                if chess.team != caster.team:
+                if chess.team != caster.team and not chess.isDead:
                     caster.deal_damage_to(opponent=chess,damage = self.damage,currentTime=currentTime)
                 else:
                     chess.heal(self.damage)
@@ -866,7 +887,7 @@ class deathBeam(skillInterface):
         target: chessInterface = None
         targetList = []
         for (uniqueID, chess) in caster.allChessDict.items():
-            if chess.team != caster.team:
+            if chess.team != caster.team and not chess.isDead: # 目标要活着
                 targetList.append(chess)
         target = targetList[randint(0, len(targetList))] 
         damage = self.baseDamage + random()*(self.ceilingDamage-self.baseDamage)
@@ -1022,6 +1043,7 @@ class bite(skillInterface):
         self.instanceDamage = bleedInstanceDamage
 
     def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
+        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,施加流血和脆弱效果")
         target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,
                                                      statusDuration=self.duration,
                                                      amplification=self.amplification,
@@ -1032,7 +1054,7 @@ class bite(skillInterface):
                                                  caster=caster,
                                                  instanceDamage=self.instanceDamage)
         caster.do_attack(opponent=target, coefficient=1.5, currentTime=currentTime)
-        print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,施加流血和脆弱效果")
+        
 
 class tiger(chessInterface):
     def __init__(self,position = [3,3]):
@@ -1078,6 +1100,7 @@ class rebirth(skillInterface):
         target.statusDict['reviving'] = reviving(currentTime=currentTime,
                                                      statusDuration=self.duration,
                                                      statusOwner=target) 
+        target.isDead = False
         
         
 class unicorn_b(chessInterface):
@@ -1090,7 +1113,7 @@ class unicorn_b(chessInterface):
                          attack_range = 4,
                          armor = 26,
                          health= 560,
-                         skill = rebirth())
+                         skill = None)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1101,49 +1124,49 @@ class unicorn_b(chessInterface):
         chessInterface.uniqueID += 1
         self.revived = False
 
-    def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime,caster=self,target=self)
-        return super().cast(implemented = True)
+    # def cast(self, currentTime: int):
+    #     self.skill.cast(currentTime=currentTime,caster=self,target=self)
+    #     return super().cast(implemented = True)
     
-    def can_attack(self) -> bool:
-        if 'reviving' not in self.statusDict:
-            return super().can_attack()
-        else:
-            return False
+    # def can_attack(self) -> bool:
+    #     if 'reviving' not in self.statusDict:
+    #         return super().can_attack()
+    #     else:
+    #         return False
 
-    def can_cast(self) -> bool:
-        if 'reviving' not in self.statusDict:
-            return super().can_cast()
-        else:
-            return False
+    # def can_cast(self) -> bool:
+    #     if 'reviving' not in self.statusDict:
+    #         return super().can_cast()
+    #     else:
+    #         return False
 
-    def check_death(self, currentTime:int) -> bool:
-        '''
-        检查当前棋子是否死亡，并且做出相应操作
-        '''
-        if self.health <= 0:
-            if self.revived:
-                if 'reviving' in self.statusDict:
-                    self.health = 1
-                    return False
-                else:
-                    self.deathTime = currentTime
-                    # remove this chess from opponent's team list
-                    print()
-                    print(f"    {self} 已经被打败!")
-                    print()
-                    self.isDead = True # 标记死亡
-                    self.position=[-1,-1] # 移除棋盘
-                    print(self.teamDict, self.uniqueID)
-                    del self.teamDict[self.uniqueID]
-                    return True
-            else:
-                self.cast(currentTime=0)
-                self.health = 1
-                self.revived = True
-                return False
-        else:
-            return False
+    # def check_death(self, currentTime:int) -> bool:
+    #     '''
+    #     检查当前棋子是否死亡，并且做出相应操作
+    #     '''
+    #     if self.health <= 0:
+    #         if self.revived:
+    #             if 'reviving' in self.statusDict:
+    #                 self.health = 1
+    #                 return False
+    #             else:
+    #                 self.deathTime = currentTime
+    #                 # remove this chess from opponent's team list
+    #                 print()
+    #                 print(f"    {self} 已经被打败!")
+    #                 print()
+    #                 self.isDead = True # 标记死亡
+    #                 self.position=[-1,-1] # 移除棋盘
+    #                 print(self.teamDict, self.uniqueID)
+    #                 del self.teamDict[self.uniqueID]
+    #                 return True
+    #         else:
+    #             self.cast(currentTime=0)
+    #             self.health = 1
+    #             self.revived = True
+    #             return False
+    #     else:
+    #         return False
         
 ############################################################################################################
 class ensnarement(skillInterface):
@@ -1177,7 +1200,7 @@ class ensnarement(skillInterface):
         target = None
         highestAttack = -1
         for (uniqueID, chess) in caster.allChessDict.items():
-            if chess.team != caster.team and chess.attack > highestAttack:
+            if chess.team != caster.team and chess.attack > highestAttack and not chess.isDead:
                 target = chess
         pos = self.move_to_target(caster = caster, target= target)
         caster.position = pos
