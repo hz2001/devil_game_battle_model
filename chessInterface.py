@@ -71,9 +71,14 @@ class chessInterface:
         self.movingSpeed = moving_speed
         self.onField = False
 
-        self.totalDamage:float = 0
         self.attack_counter:int = 0 # take track of when this chess can attack
         self.cd_counter:int = 0 # take track of when this chess can cast spell
+        
+        # for test purposes
+        self.totalDamageReceived: float = 0
+        self.totalDamage:float = 0
+        self.deathTime: float = 0
+
     # 公用ID，每添加一个棋子，id就会加1
     uniqueID = 0
     def __repr__(self) -> str:
@@ -101,7 +106,8 @@ class chessInterface:
             allChessDict (dict[int, chessInterface]): _description_
         """
         self.allChessDict = allChessDict
-    def reset(self):
+    def reset(self, test = False):
+        
         self.isDead = False
         self.resetPosition()
         self.resetHealth()
@@ -201,7 +207,7 @@ class chessInterface:
         else:
             print(f"{self}Implement the cast method!!!! remember to reset the timer to 0")
 
-    def check_death(self) -> bool:
+    def check_death(self, currentTime: int) -> bool:
         '''
         检查当前棋子是否死亡，并且做出相应操作
         '''
@@ -209,6 +215,7 @@ class chessInterface:
             return True
         else:
             if self.health <= 0:
+                self.deathTime = currentTime
                 # remove this chess from opponent's team list
                 print()
                 print(f"    {self} 已经被打败!")
@@ -262,6 +269,7 @@ class chessInterface:
         if 'vulnerable' in opponent.statusDict:
             damage = damage * ((opponent.statusDict['vulnerable'].amplification) + 1)
         opponent.health -= damage
+        opponent.totalDamageReceived += damage
         self.totalDamage += damage
         # check receiver status (比如对手是海胆, id=9，就需要查看对方是否有反伤开启，对手是犀牛，就查看自己是否是昆虫等)
         if self.id != 9 and opponent.id == 9 and \
@@ -270,7 +278,7 @@ class chessInterface:
             opponent.statusDict['dispersion_status'].activate(currentTime=currentTime,
                                                               target = self,
                                                               damage = damage)
-        if opponent.check_death():
+        if opponent.check_death(currentTime = currentTime):
             return True
         else:
             return False
