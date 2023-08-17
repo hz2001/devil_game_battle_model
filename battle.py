@@ -257,10 +257,12 @@ class battle:
 
     def battle_with_skills_test(self, recordDict: dict):
         # 对战测试版，会记录棋子的详细信息
-        self.board_print()
+        # self.board_print()
         current_time = 0
         while self.teamAlive(self.redTeamDict) and self.teamAlive(self.blueTeamDict):
             current_time += 5
+            if current_time > 6000:
+                return 0, current_time
 
             for (attackerID, attackerChess) in self.allChessDict.copy().items():
                 if self.update_chess_position_onboard(chessToBeMoved=attackerChess):
@@ -281,27 +283,29 @@ class battle:
                     if attackerChess.can_cast(): # 技能判定
                         # 是时候放技能了！
                         attackerChess.cast(currentTime=current_time)
-                        # TODO 漏洞：为了减小算法难度，计算对手状态的效果等到loop到该棋子的时候再完成，但是这样会导致如果有棋子在这之前对其发动攻击，则该伤害无法计算buff/debuff
                 if attackerChess.enemy_in_attack_range(): # 如果敌人在攻击范围内则不移动
                     if attackerChess.can_attack(): # 攻击判定
                         opponent = attackerChess.get_hate_mechanism()
-                        attackerChess.do_attack(currentTime=current_time, opponent=opponent)
+                        attackerChess.totalAttackDamage += attackerChess.do_attack(currentTime=current_time, opponent=opponent)
                 elif attackerChess.can_move(): # 移动判定
                     attackerChess.start_moving(currentTime= current_time, board = self.board,moving=moving)
                     self.update_chess_position_onboard(chessToBeMoved=attackerChess)
                         # self.board_print()
         if self.teamAlive(self.redTeamDict):
-            print(f"{colored('红','red')}方获胜!")
+            wonTeam = 0
+            # print(f"{colored('红','red')}方获胜!")
         else:
-            print(f"{colored('蓝','blue')}方获胜!")
-        
-        self.board_print()
-        for uniqueID, chess in self.allChessDict.items():
-            print(chess, chess.getTotalDamageDealt())
+            wonTeam = 1
+            # print(f"{colored('蓝','blue')}方获胜!")
+        # print the board after the battle
+        # self.board_print()
+
         # reset everything 
-        for uid, chess in self.allChessDict.items():
-            chess.reset()
+        # for uid, chess in self.allChessDict.items():
+        #     chess.reset()
         self.board_clear()
+        # return the won team 
+        return wonTeam, current_time
 
 def main():
     # tested:{sea_hedgehog(position = [3,3]), # 海胆， 熊，蜜蜂，羊，螳螂, 蝎子，麋鹿
@@ -324,10 +328,13 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [swallower(position=[1,3])]
+    redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
+               mantis(position=[1,4]),unicorn_b(position=[2,4])]
     # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
     # redTeam = [rabbit(position=[2,2])]
-    blueTeam = [rabbit(position=[3,2])]
+    blueTeam = [tiger(position=[3,3]),
+                anglerfish(position=[4,0]),hippo(position=[4,2]),
+               bee(position=[5,2]),fireworm(position=[5,4])]
     # blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
     # blueTeam = [ant(position=[3,2])]
     newBattle.addRedTeam(redTeam)

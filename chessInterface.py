@@ -330,7 +330,6 @@ class chessInterface:
 
     def opponent_distances(self) -> dict[float, chessInterface]:
         '''返回所有对方棋子的直线距离和chess的 dict'''
-        # print(self.allChessDict)
         return {abs(dist(self.position,
                                 chess.position)):chess
                 for (uniqueID,chess) in self.allChessDict.items()
