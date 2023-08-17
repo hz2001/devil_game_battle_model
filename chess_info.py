@@ -97,7 +97,6 @@ class threeStinkers(skillInterface):
         self.maxHP = deepcopy(maxHP)
         self.threshold = threshold
         
-        # print("三个臭皮匠",self.ant_count)
 
         
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
@@ -142,7 +141,6 @@ class ant(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        # print(self,self.maxHP)
         self.skill = threeStinkers( attack = self.attack, 
                                    armor= self.armor, 
                                    health= self.health, 
@@ -798,7 +796,6 @@ class mantis(chessInterface):
             print(currentTime/100, f"  {self}使用了{self.skill}")
         else:
             self.fakeRandom += 0.02
-            # print("      ",self, self.fakeRandom
         return super().do_attack(opponent,currentTime, coefficient)
 
 
@@ -1060,7 +1057,6 @@ class tiger(chessInterface):
     def cast(self, currentTime: int):
         # opponents_distances = self.opponent_distances()
         # nearest = sorted(opponents_distances)[0]
-        # # print(self,nearest,opponents_distances)
         # chessToBeAttacked = opponents_distances[nearest]
         target = self.opponent_distances()[sorted(self.opponent_distances())[0]]
         self.skill.cast(currentTime=currentTime,caster=self,target=target)
@@ -1138,11 +1134,10 @@ class unicorn_b(chessInterface):
                     print()
                     self.isDead = True # 标记死亡
                     self.position=[-1,-1] # 移除棋盘
-                    # print(self.teamDict, self.uniqueID)
+                    print(self.teamDict, self.uniqueID)
                     del self.teamDict[self.uniqueID]
                     return True
             else:
-                # print('check_death:')
                 self.cast(currentTime=0)
                 self.health = 1
                 self.revived = True
@@ -1256,8 +1251,9 @@ class abyssBite(skillInterface):
         self.lastTarget = None
         self.baseAttack = baseAttack
 
-    def cast(self, currentTime: int, caster:chessInterface, target: chessInterface):
-        if target == self.lastTarget:
+    def cast(self, currentTime: int, caster:chessInterface, target: chessInterface):            
+        self.lastTarget = caster 
+        if target == self.lastTarget or self.lastTarget is None: # 第一次攻击没有last target
             print(f"{currentTime/100}  {caster}攻击了同一个目标，攻击力提升{self.increaseMultiplier}")
             self.singleTargetAttackCount += 1
             caster.attack = self.baseAttack + self.increaseMultiplier * self.singleTargetAttackCount

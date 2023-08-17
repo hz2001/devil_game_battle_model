@@ -78,6 +78,7 @@ class chessInterface:
         # for test purposes
         self.totalDamageReceived: float = 0
         self.totalDamage:float = 0
+        self.totalAttackDamage:float = 0
         self.deathTime: float = 0
 
     # 公用ID，每添加一个棋子，id就会加1
@@ -151,8 +152,7 @@ class chessInterface:
 
     def can_attack(self) -> bool:
         '''判定棋子是否可以攻击, attack_interval 100 = 1 秒'''
-        # print("attack?",self.attack_counter, self.attack_interval )
-        # print(self)
+
         if self.statusDict['stunned'] is None and \
             self.statusDict['hexed'] is None and \
             self.statusDict['silenced'] is None and \
@@ -195,7 +195,6 @@ class chessInterface:
         '''如果激活条件满足，就触发状态效果'''
         for (statusID, status) in self.statusDict.copy().items():
             if status is not None:
-                # print(self,status)
                 status.activate(currentTime=currentTime)
 
     def cast(self, currentTime:int=0, implemented: bool = False):
@@ -229,7 +228,6 @@ class chessInterface:
                 print()
                 self.isDead = True # 标记死亡
                 self.position=[-1,-1] # 移除棋盘
-                # print(self.teamDict, self.uniqueID)
                 del self.teamDict[self.uniqueID]
                 return True
             else:
@@ -241,9 +239,11 @@ class chessInterface:
     def do_attack(self,
             opponent: chessInterface,
             currentTime: int,
-            coefficient: float = 1.0) -> None:
+            coefficient: float = 1.0) -> float:
         """在棋子需要攻击的时候调用这个方法，这个方法会计算伤害，调用 deal_damage_to()方法造成伤害,并且打印attack info。
-
+        
+           返回：
+                返回造成的伤害: float
         Args:
             opponent (chessInterface): _description_
             currentTime (int): _description_
@@ -255,9 +255,9 @@ class chessInterface:
                             damage= damage,
                             currentTime=currentTime)
         self.attack_counter = 0
+        return damage
 
     def print_attack_info(self,opponent: chessInterface, currentTime: int, damage: float):
-        # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 
         print(currentTime/100,f"<{self}> 攻击了<{opponent}>, 造成了{colored(damage,'cyan')}点伤害，<{opponent}>生命值还剩:{colored(opponent.health-damage,'green')} / {opponent.maxHP}") 
     
     def deal_damage_to(self,
@@ -367,7 +367,6 @@ class chessInterface:
         '''
         opponents_distances = self.opponent_distances()
         nearest = sorted(opponents_distances)[0]
-        # print(self,nearest,opponents_distances)
         chessToBeAttacked = opponents_distances[nearest]
         return chessToBeAttacked
     
@@ -466,5 +465,4 @@ class chessInterface:
             self.move_to(action['direction'],currentTime=currentTime)
 
     def print_move_info(self,direction: str, currentTime: int):
-        # print(currentTime/100,f"{t}方棋子<{colored(self.chessName,'magenta')}> 攻击了{ot}方棋子<{colored(opponent.chessName,'magenta')}>, 造成了{colored(damage,'cyan')}点伤害，{ot}方棋子<{colored(opponent.chessName,'magenta')}>生命值还剩:{colored(opponent.health,'green')} / {opponent.maxHP}") 
         print(currentTime/100,f"<{self}>向<{direction}> 移动了一格") 
