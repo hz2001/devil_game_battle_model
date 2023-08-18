@@ -47,9 +47,13 @@ class huishoutao(skillInterface):
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
         target = caster.get_hate_mechanism()
         print(f"{currentTime/100}   {caster}对{target}使用了{self},造成{self.damage}点伤害")
-        target.statusDict['stunned'] = stunned(currentTime=currentTime,
-                                               statusDuration=self.stunDuration,
-                                               statusOwner=target)
+        if target.statusDict['stunned'] is not None:
+            # 增加时长替代重新负值
+            target.statusDict['stunned'].addBuff(currentTime=currentTime,duration = self.stunDuration)
+        else:
+            target.statusDict['stunned'] = stunned(currentTime=currentTime,
+                                                statusDuration=self.stunDuration,
+                                                statusOwner=target)
         caster.deal_damage_to(opponent=target,damage = self.damage,currentTime=currentTime)
   
 class rabbit(chessInterface): 
@@ -214,12 +218,12 @@ class littleUglyFish(chessInterface):
 # 羊驼
 class hex(skillInterface):
     # turn an enemy into a sheep for x seconds
-    def __init__(self, duration = 2) -> None:
+    def __init__(self, duration:float = 2) -> None:
         super().__init__(skillName = "变羊",
                          cd = 5.0,
                          type = "active",
                          description= f"把对方星级最高的棋子变成羊,持续{duration}秒")
-        self.duration = 2
+        self.duration: float = duration
     
     def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
         maxStar = 0
@@ -229,7 +233,13 @@ class hex(skillInterface):
                 maxStar = chess.star
         if target is not None:
             # 如果target 不是None，说明有目标可以被羊，羊目标后进入cd
-            target.statusDict['hexed'] = hexed(statusOwner=target, currentTime=currentTime)
+            if target.statusDict['hexed'] is not None:
+                # 增加时长替代重新负值
+                target.statusDict['hexed'].addBuff(currentTime,self.duration)
+            else:
+                target.statusDict['hexed'] = hexed(statusOwner=target,
+                                               currentTime=currentTime,
+                                               statusDuration=self.duration)
 
 class llama(chessInterface):
     def __init__(self,position = [3,3]):
@@ -407,8 +417,12 @@ class going_honey(skillInterface):
                  skillName: str = "来一口蜂蜜",
                  cd: float = 6,
                  type: str = "active",
-                 description: str = "蜜蜂给一个随机队友喂食蜂蜜，增加其攻速40% 持续3秒") -> None:
+                 description: str = "蜜蜂给一个随机队友喂食蜂蜜，增加其攻速40% 持续3秒",
+                 enhanceRatio: float = 0.4,
+                 duration: float = 3) -> None:
         super().__init__(skillName, cd, type, description)
+        self.enhanceRatio = enhanceRatio
+        self.duration = duration
     
     def cast(self, currentTime:int, caster:chessInterface, target: chessInterface = None):
         randomMax = 0
@@ -418,11 +432,15 @@ class going_honey(skillInterface):
                 target = chess
         if target is None:
             target = caster
-        print(f"{currentTime/100}   {caster}使用了{self}")
-        target.statusDict['attack_interval_change'] = attack_interval_change(statusOwner=target,
-                                                                             currentTime=currentTime,
-                                                                             changeRatio=0.4,
-                                                                             statusDuration=3)
+        print(f"{currentTime/100}   {caster}对{target}使用了{self}")
+        if target.statusDict['attack_interval_change'] is not None:
+            # 分别记录攻击时长
+            target.statusDict['attack_interval_change'].addBuff(currentTime, self.duration, self.enhanceRatio)
+        else:
+            target.statusDict['attack_interval_change'] = attack_interval_change(statusOwner=target,
+                                                                                currentTime=currentTime,
+                                                                                changeRatio=self.enhanceRatio,
+                                                                                statusDuration=self.duration)
 
 class bee(chessInterface):
     def __init__(self,position = [3,3]):
@@ -648,18 +666,23 @@ class earth_shock(skillInterface):
                  cd: float = 7.0,
                  type: str = "active",
                  description: str = "熊震撼大地，眩晕身边的所有敌人,并且造成伤害",
-                 damage:float = 150) -> None:
+                 damage:float = 150,
+                 duration:float = 2.5) -> None:
         super().__init__(skillName, cd, type, description)
         self.damage = damage
+        self.duration = duration
 
     def cast(self, currentTime, caster: chessInterface, target: chessInterface = None):
         caster.cd_counter = 0 # reset the counter for this skill
         print(f"{currentTime/100}  {caster}使用了{self}")
         for (chessID,chess) in caster.allChessDict.items():
             if chess.team != caster.team and chess.position in caster.get_surrounding(1) and not chess.isDead:
-                chess.statusDict['stunned'] = stunned(statusOwner=chess,
-                                                      currentTime=currentTime,
-                                                      statusDuration=2.5)
+                if chess.statusDict['stunned'] is None:
+                    chess.statusDict['stunned'] = stunned(statusOwner=chess,
+                                                        currentTime=currentTime,
+                                                        statusDuration=self.duration)
+                else:
+                    chess.statusDict['stunned'].addBuff(currentTime, self.duration)
                 caster.deal_damage_to(opponent=chess,damage = self.damage, currentTime=currentTime)
 # 熊
 class bear(chessInterface):
@@ -702,9 +725,13 @@ class silenceAttack(skillInterface):
 
     def cast(self, currentTime, caster, target: chessInterface):
         super().cast(currentTime=currentTime, caster = caster, target = target)
-        target.statusDict['silence'] = silenced(currentTime=currentTime,
-                                                statusDuration=self.duration,
-                                                statusOwner = target)
+        if target.statusDict['silence'] is not None:
+            # 增加时长
+            target.statusDict['silence'].addBuff(currentTime=currentTime,duration = self.duration)
+        else:
+            target.statusDict['silence'] = silenced(currentTime=currentTime,
+                                                    statusDuration=self.duration,
+                                                    statusOwner = target)
 class butterfly(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "福蝶",id=14,
@@ -1044,15 +1071,22 @@ class bite(skillInterface):
 
     def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
         print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,施加流血和脆弱效果")
-        target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,
-                                                     statusDuration=self.duration,
-                                                     amplification=self.amplification,
-                                                     statusOwner=target)
-        target.statusDict['bleeding'] = bleeding(currentTime=currentTime,
-                                                 statusDuration=self.duration,
-                                                 statusOwner=target,
-                                                 caster=caster,
-                                                 instanceDamage=self.instanceDamage)
+        if target.statusDict['vulnerable'] is None:
+            target.statusDict['vulnerable'] = vulnerable(currentTime=currentTime,
+                                                        statusDuration=self.duration,
+                                                        amplification=self.amplification,
+                                                        statusOwner=target)
+        else:
+            target.statusDict['vulnerable'].addBuff(currentTime, self.duration)
+            
+        if target.statusDict['bleeding'] is None:
+            target.statusDict['bleeding'] = bleeding(currentTime=currentTime,
+                                                    statusDuration=self.duration,
+                                                    statusOwner=target,
+                                                    caster=caster,
+                                                    instanceDamage=self.instanceDamage)
+        else:
+            target.statusDict['bleeding'].addBuff(currentTime, self.duration)
         caster.do_attack(opponent=target, coefficient=1.5, currentTime=currentTime)
         
 
@@ -1207,7 +1241,7 @@ class ensnarement(skillInterface):
         # TODO: 更新棋盘
         if target.statusDict['disarmed'] is not None:
             #  增加缴械时间
-            target.statusDict['disarmed'].statusEnd = currentTime + self.duration
+            target.statusDict['disarmed'].addBuff(currentTime, self.duration)
         else:
             # 创建缴械对象
             target.statusDict['disarmed'] = disarmed(currentTime=currentTime,
