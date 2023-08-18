@@ -273,7 +273,7 @@ class chessInterface:
         """
         if self.id in {2,6,7,14,15,16,17,25,26} and opponent.id == 12: # 自己如果是虫，对方如果是犀牛，就减少自己对其造成的伤害
             damage = damage * (1-opponent.skill.reductionRate)
-        if 'vulnerable' in opponent.statusDict:
+        if opponent.statusDict['vulnerable'] is not None:
             damage = damage * ((opponent.statusDict['vulnerable'].amplification) + 1)
         opponent.health -= damage
         opponent.totalDamageReceived += damage
