@@ -43,10 +43,12 @@ class moving(statusInterface):
 # 变羊
 class hexed(statusInterface):
     def __init__(self, currentTime: int,
-                 statusOwner: chessInterface) -> None:
+                 statusOwner: chessInterface,
+                 statusDuration: float = 2.0) -> None:
         super().__init__(statusName = "变羊",
                          currentTime = currentTime,
-                         statusDuration=2.0, statusType="disable")
+                         statusDuration = statusDuration, 
+                         statusType="disable")
         self.statusOwner = statusOwner
         print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
 
@@ -171,20 +173,47 @@ class attack_interval_change(statusInterface):
                          statusType = "buff/debuff")
         self.statusOwner = statusOwner
         self.originalAttackInterval = deepcopy(self.statusOwner.attack_interval)
-        currentAttackInterval =1/(1/self.statusOwner.attack_interval * (1+changeRatio))
-        print(f"    {statusOwner} 攻击速度提升{changeRatio*100}%, 原攻击间隔{self.statusOwner.attack_interval/100}, 现攻击间隔{currentAttackInterval/100}")
+
+        statusDuration = int (100* statusDuration)
+        statusEnd = currentTime + statusDuration
+        self.buffQueue = [(statusEnd,changeRatio)]
+        self.setAttackInterval()
+    
+    def addBuff(self, currentTime: int, duration: float, changeRatio:float):
+        # 新增一个buff/debuff
+        newEndTime = int(duration * 100) + currentTime
+        self.buffQueue.append((newEndTime, changeRatio))
+        self.setAttackInterval() # 更新攻击间隔
+    
+    def setAttackInterval(self):
+        """根据当前queue计算棋子当前攻击间隔"""
+        multiplier = 1
+        for (endTime, changeRatio) in self.buffQueue:
+            multiplier *= 1+changeRatio
+        currentAttackInterval =1/(1/self.originalAttackInterval * multiplier)
+        print(f"    {self.statusOwner} 攻击速度改变至{multiplier*100}%, 原攻击间隔{self.statusOwner.attack_interval/100}, 现攻击间隔{currentAttackInterval/100}")
         self.statusOwner.attack_interval = currentAttackInterval
-        
 
     def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
+        if self.buffQueue == []:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, 攻击间隔回复初始值{self.originalAttackInterval}")
             self.statusOwner.attack_interval = self.originalAttackInterval
             self.statusOwner.statusDict['attack_interval_change'] = None
-            return False
         else:
-            # 减小/加大攻击间隔 攻击间隔=1/攻速
-            return True
+            if currentTime > self.buffQueue[0][0]:
+                # 如果buff 结束时间大于第一个时间，就pop 并且重新计算interval
+                self.buffQueue.pop()
+                self.setAttackInterval()
+    
+    # def activate(self, currentTime: float) -> bool:
+    #     if currentTime > self.statusEnd:
+    #         print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, 攻击间隔回复初始值{self.originalAttackInterval}")
+    #         self.statusOwner.attack_interval = self.originalAttackInterval
+    #         self.statusOwner.statusDict['attack_interval_change'] = None
+    #         return False
+    #     else:
+    #         # 减小/加大攻击间隔 攻击间隔=1/攻速
+    #         return True
 
 class summoned(statusInterface):
     def __init__(self,
