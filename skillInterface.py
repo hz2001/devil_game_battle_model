@@ -23,7 +23,7 @@ class skillInterface:
         '''
         parameter： currentTime, caster, opponent
         placeholder， 每一个技能都需要不同的实现'''
-        print(f"{currentTime/100}  {caster}使用了{self}")
+        print(f"{currentTime/100}  {caster}对{target}使用了{self}")
         return
     def __repr__(self) -> str:
         return f"*{colored(self.skillName,'green')}*"

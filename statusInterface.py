@@ -31,6 +31,6 @@ class statusInterface:
         ''' activate the status for the status owner'''
         print("implement the activate method!!!!")
         pass
-    def addBuff(self, currentTime, duration):
+    def addBuff(self, currentTime:int, duration:float):
         print(f"{currentTime}    {self.statusOwner}又被{self.statusName}了")
         self.statusEnd += int(duration * 100)

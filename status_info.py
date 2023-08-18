@@ -140,7 +140,7 @@ class silenced(statusInterface):
             self.statusOwner.statusDict['silenced'] = None
             return False
         else:
-            # 仍然被沉默，跳过 技能判定，攻击判定继续
+            # 仍然被沉默，跳过 技能判定，攻击判定继续 在can_cast中体现
             return True
 
 # 破坏 （被动无效化）
@@ -318,7 +318,6 @@ class vulnerable(statusInterface):
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             self.statusOwner.statusDict['vulnerable'] = None
-            self.statusOwner.statusDict.pop('vulnerable', None)
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             return False
         else:

@@ -230,7 +230,6 @@ class battle:
                     if attackerChess.can_cast(): # 技能判定
                         # 是时候放技能了！
                         attackerChess.cast(currentTime=current_time)
-                        # TODO 漏洞：为了减小算法难度，计算对手状态的效果等到loop到该棋子的时候再完成，但是这样会导致如果有棋子在这之前对其发动攻击，则该伤害无法计算buff/debuff
                 if attackerChess.enemy_in_attack_range(): # 如果敌人在攻击范围内则不移动
                     if attackerChess.can_attack(): # 攻击判定
                         opponent = attackerChess.get_hate_mechanism()
@@ -328,15 +327,15 @@ def main():
     #               swallower() }
     
     newBattle = battle()
-    redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
-               mantis(position=[1,4]),unicorn_b(position=[2,4])]
-    # redTeam = [scorpion(position=[1,1]),bear(position=[2,2]), heal_deer(position=[1,3])]
-    # redTeam = [rabbit(position=[2,2])]
-    blueTeam = [tiger(position=[3,3]),
-                anglerfish(position=[4,0]),hippo(position=[4,2]),
-               bee(position=[5,2]),fireworm(position=[5,4])]
-    # blueTeam = [hippo(position=[3,2]),tiger(position=[4,4]),mantis(position=[3,3])]
-    # blueTeam = [ant(position=[3,2])]
+    # redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
+    #            mantis(position=[1,4]),unicorn_b(position=[2,4])]
+    # blueTeam = [tiger(position=[3,3]),
+    #             anglerfish(position=[4,0]),hippo(position=[4,2]),
+    #            bee(position=[5,2]),fireworm(position=[5,4])]ß
+    redTeam = [ant(position = [2,2])]
+    blueTeam = [ant(position = [3,2])]
+
+
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
     # newBattle.battle_between_2(newBattle.redTeamChess[0], newBattle.blueTeamChess[0])
