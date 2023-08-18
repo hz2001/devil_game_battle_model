@@ -65,7 +65,7 @@ class rabbit(chessInterface):
                          attack = 21,
                          attack_interval=0.9,
                          attack_range = 1.5,
-                         armor=7,
+                         armor=10,
                          health=250,
                          skill = huishoutao())
         self.statusDict = {'moving': None,
@@ -134,7 +134,7 @@ class ant(chessInterface):
                          attack = 20,
                          attack_interval = 1,
                          attack_range = 1.5,
-                         armor=10,
+                         armor=9,
                          health=180,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -194,9 +194,9 @@ class littleUglyFish(chessInterface):
                          race = "marine",
                          star = 1,
                          attack = 33,
-                         attack_interval=0.9,
+                         attack_interval=0.8,
                          attack_range = 2,
-                         armor=13,
+                         armor=12,
                          health=252,
                          skill = fearMove())
         self.statusDict = {'moving': None,
@@ -325,7 +325,7 @@ class wolf(chessInterface):
                          attack = 45,
                          attack_interval=0.85,
                          attack_range = 1.5, 
-                         armor=21,
+                         armor=16,
                          health=520,
                          skill = skill)
         self.statusDict = {'moving': None,
@@ -348,7 +348,7 @@ class wolfMinion(wolf):
         self.chessName = "狼分身"
         print(f"      {self}被召唤了!")
         self.attack = self.attack/3
-        self.armor=self.armor/3
+        self.armor=int(self.armor*0.7)
         self.health=self.health/3
         self.maxHP = deepcopy(self.health)
         self.statusDict['summoned'] = summoned(statusDuration=10,
@@ -392,7 +392,7 @@ class ladybug(chessInterface):
                          attack = 21,
                          attack_interval=0.8,
                          attack_range = 1.5,
-                         armor=25,
+                         armor=28,
                          health=478,
                          skill = transformation()) # 之前太强了，削弱一些
         self.statusDict = {'moving': None,
@@ -450,7 +450,7 @@ class bee(chessInterface):
                          attack = 36,
                          attack_interval=1.1,
                          attack_range = 1.5,
-                         armor=20,
+                         armor=17,
                          health=380,
                          skill = going_honey())
         self.statusDict = {'moving': None,
@@ -494,7 +494,7 @@ class swallower(chessInterface):
                          attack = 88,
                          attack_interval=1.2,
                          attack_range = 1.5,
-                         armor=20,
+                         armor=15,
                          health=380,
                          skill = skill)
         self.statusDict = {'moving': None,
@@ -531,8 +531,8 @@ class sea_hedgehog(chessInterface):
                          attack = 20,
                          attack_interval=1.0,
                          attack_range = 1.5,
-                         armor=3,
-                         health=800,
+                         armor=7,
+                         health=1000,
                          skill = dispersion_skill())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -586,7 +586,7 @@ class heal_deer(chessInterface):
                          attack = 30,
                          attack_interval=1.05,
                          attack_range = 2.5,
-                         armor=27,
+                         armor=19,
                          health=830,
                          skill = None)
         self.skill = skill
@@ -615,7 +615,7 @@ class monkey(chessInterface):
                          attack = 74,
                          attack_interval=0.7, # 有可能太高
                          attack_range = 3,
-                         armor = 17,
+                         armor = 14,
                          health= 288,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -646,7 +646,7 @@ class hippo(chessInterface):
                          attack = 68,
                          attack_interval=1.7,
                          attack_range = 1.5,
-                         armor = 91,
+                         armor = 63,
                          health= 1250,
                          skill = antiInsect())
         self.statusDict ={'moving': None,
@@ -693,7 +693,7 @@ class bear(chessInterface):
                          attack = 95,
                          attack_interval=0.95,
                          attack_range = 1.5,
-                         armor = 45,
+                         armor = 31,
                          health= 760,
                          skill = earth_shock())
         self.initialPosition = position
@@ -725,7 +725,7 @@ class silenceAttack(skillInterface):
 
     def cast(self, currentTime, caster, target: chessInterface):
         super().cast(currentTime=currentTime, caster = caster, target = target)
-        if target.statusDict['silence'] is not None:
+        if target.statusDict['silenced'] is not None:
             # 增加时长
             target.statusDict['silence'].addBuff(currentTime=currentTime,duration = self.duration)
         else:
@@ -740,7 +740,7 @@ class butterfly(chessInterface):
                          attack = 66,
                          attack_interval=1.1,
                          attack_range = 3,
-                         armor = 27,
+                         armor = 22,
                          health= 518,
                          skill = silenceAttack(duration = 1.5))
         self.statusDict = {'moving': None,
@@ -753,8 +753,9 @@ class butterfly(chessInterface):
         chessInterface.uniqueID += 1
         
     def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
+        damage =  super().do_attack(opponent, currentTime, coefficient)
         self.skill.cast(currentTime=currentTime,caster = self, target =opponent)
-        return super().do_attack(opponent, currentTime, coefficient)
+        return damage
 
 ############################################################################################################
 # 萤火虫
@@ -788,7 +789,7 @@ class fireworm(chessInterface):
                          attack = 0,
                          attack_interval=10,
                          attack_range = 2,
-                         armor = 30,
+                         armor = 24,
                          health= 650,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -824,7 +825,7 @@ class mantis(chessInterface):
                          attack = 140,
                          attack_interval=0.85,
                          attack_range = 1.5,
-                         armor = 78,
+                         armor = 65,
                          health= 270,
                          skill = skill )
         self.statusDict = {'moving': None,
@@ -879,7 +880,7 @@ class scorpion(chessInterface):
                          attack = 58,
                          attack_interval=1.5,
                          attack_range = 1.5,
-                         armor = 32,
+                         armor = 25,
                          health= 840,
                          skill = skill)
         self.statusDict = {'moving': None,
@@ -929,7 +930,7 @@ class anglerfish(chessInterface):
                          attack = 45,
                          attack_interval=1.0,
                          attack_range = 2,
-                         armor = 23,
+                         armor = 17,
                          health= 470,
                          skill = deathBeam(castRange=3, baseDamage=300, ceilingDamage=600))
         self.statusDict = {'moving': None,
@@ -954,7 +955,7 @@ class electric_eel(chessInterface):
                          attack = 65,
                          attack_interval=0.9,
                          attack_range = 3,
-                         armor = 23,
+                         armor = 18,
                          health= 560,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -975,7 +976,7 @@ class crab(chessInterface):
                          attack = 75,
                          attack_interval=1.3,
                          attack_range = 1.5,
-                         armor = 35,
+                         armor = 28,
                          health= 880,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -996,7 +997,7 @@ class monoceros(chessInterface):
                          attack = 88,
                          attack_interval=0.95,
                          attack_range = 1.5,
-                         armor = 27,
+                         armor = 22,
                          health= 680,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -1017,7 +1018,7 @@ class turtle(chessInterface):
                          attack = 50,
                          attack_interval=1.0,
                          attack_range = 1.5,
-                         armor = 81,
+                         armor = 56,
                          health= 750,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -1041,7 +1042,7 @@ class elephant(chessInterface):
                          attack = 115,
                          attack_interval=1.2,
                          attack_range = 2,
-                         armor = 65,
+                         armor = 46,
                          health= 1600,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -1098,7 +1099,7 @@ class tiger(chessInterface):
                          attack = 150,
                          attack_interval=0.7,
                          attack_range = 1.5,
-                         armor = 43,
+                         armor = 34,
                          health= 1040,# 有点低
                          skill = bite())
         self.statusDict = {'moving': None,
@@ -1145,7 +1146,7 @@ class unicorn_b(chessInterface):
                          attack = 112, # 有点低
                          attack_interval=0.55,
                          attack_range = 4,
-                         armor = 26,
+                         armor = 16,
                          health= 560,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -1256,7 +1257,7 @@ class spider(chessInterface):
                          attack = 98, # 有点低
                          attack_interval=0.85,
                          attack_range = 1.5,
-                         armor = 65,
+                         armor = 45,
                          health= 1270,
                          skill = ensnarement())
         self.statusDict = {'moving': None,
@@ -1282,7 +1283,7 @@ class octopus(chessInterface):
                          attack = 99, # 有点低
                          attack_interval=0.75,
                          attack_range = 2,
-                         armor = 42,
+                         armor = 33,
                          health= 1550,
                          skill = None)
         self.statusDict = {'moving': None,
@@ -1326,7 +1327,7 @@ class shark(chessInterface):
                          attack = 80, # 有点低
                          attack_interval=0.5,
                          attack_range = 1.5,
-                         armor = 60,
+                         armor = 42,
                          health= 1200,
                          skill = None)
         self.statusDict = {'moving': None,
