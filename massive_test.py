@@ -14,15 +14,15 @@ chess_dict = {1: rabbit, 2:ant, 3:littleUglyFish,
                 10: heal_deer, 11: monkey, 
                 12: hippo, 13: bear,
                 14: butterfly, 15: fireworm,
-                16: mantis, 17: scorpion, # 3 star insect melee 螳螂， 蝎子
+                16: mantis, 17: scorpion,
                   
-                18: anglerfish, 19: electric_eel, # 3 star marine ranged 灯笼鱼， 电鳗
-                20: crab, 21: monoceros, 22: turtle, # 3 star marine ranged 螃蟹，一角鲸，海龟
+                18: anglerfish, 19: electric_eel,
+                20: crab, 21: monoceros, 22: turtle,
 
-                23:elephant,24:tiger, # 大象， 老虎
-                25:unicorn_b, 26:spider,  # 独角仙， 蜘蛛
+                23:elephant,24:tiger,
+                25:unicorn_b, 26:spider,  
                 27:octopus, 28:shark,
-                29: wolfMinion} # 章鱼， 鲨鱼
+                29: wolfMinion} 
 
 chessName_dict = {1: '兔子 id:1', 2:'蚂蚁 id:2', 3:"小丑鱼 id:3", 
                 
@@ -33,15 +33,15 @@ chessName_dict = {1: '兔子 id:1', 2:'蚂蚁 id:2', 3:"小丑鱼 id:3",
                 10: '麋鹿 id:10', 11: '猴子 id:11', 
                 12: '河马 id:12', 13: '熊 id:13',
                 14: '蝴蝶 id:14', 15: '萤火虫 id:15',
-                16: '螳螂 id:16', 17: '蝎子 id:17', # 3 star insect melee 螳螂， 蝎子
+                16: '螳螂 id:16', 17: '蝎子 id:17', 
                   
-                18: '灯笼鱼 id:8', 19: '电鳗 id:19', # 3 star marine ranged 灯笼鱼， 电鳗
-                20: '螃蟹 id:20', 21: '一角鲸 id:21', 22: '海龟 id:22', # 3 star marine ranged 螃蟹，一角鲸，海龟
+                18: '灯笼鱼 id:8', 19: '电鳗 id:19',
+                20: '螃蟹 id:20', 21: '一角鲸 id:21', 22: '海龟 id:22', 
 
-                23:'大象 id:23',24:'老虎 id:24', # 大象， 老虎
-                25:'独角仙 id:25', 26:'蜘蛛 id:26',  # 独角仙， 蜘蛛
+                23:'大象 id:23',24:'老虎 id:24',
+                25:'独角仙 id:25', 26:'蜘蛛 id:26', 
                 27:'章鱼 id:27', 28:'鲨鱼 id:28',
-                29: 'wolfMinion id:29'} # 章鱼， 鲨鱼
+                29: 'wolfMinion id:29'} 
 chessName_dict_inEng = {1: 'rabbit id:1', 2:'ant id:2', 3:"littleUglyFish id:3", 
                 
                 4:"llama id:4", 5:"wolf id:5", 
@@ -51,15 +51,15 @@ chessName_dict_inEng = {1: 'rabbit id:1', 2:'ant id:2', 3:"littleUglyFish id:3",
                 10: 'heal_deer id:10', 11: 'monkey id:11', 
                 12: 'hippo id:12', 13: 'bear id:13',
                 14: 'butterfly id:14', 15: 'fireworm id:15',
-                16: 'mantis id:16', 17: 'scorpion id:17', # 3 star insect melee 螳螂， 蝎子
+                16: 'mantis id:16', 17: 'scorpion id:17', 
                   
-                18: 'anglerFish id:8', 19: 'electric_e id:19', # 3 star marine ranged 灯笼鱼， 电鳗
-                20: 'crab id:20', 21: 'monocro id:21', 22: 'turtle id:22', # 3 star marine ranged 螃蟹，一角鲸，海龟
+                18: 'anglerFish id:8', 19: 'electric_e id:19',
+                20: 'crab id:20', 21: 'monocro id:21', 22: 'turtle id:22', 
 
-                23:'elephant id:23',24:'tiger id:24', # 大象， 老虎
-                25:'unicorn_b id:25', 26:'spider id:26',  # 独角仙， 蜘蛛
+                23:'elephant id:23',24:'tiger id:24',
+                25:'unicorn_b id:25', 26:'spider id:26', 
                 27:'octopus id:27', 28:'shark id:28',
-                29: 'wolfMinion id:29'} # 章鱼， 鲨鱼
+                29: 'wolfMinion id:29'} 
 
 everythingWeNeedToKnowAboutAChess = {'chessName': '',
                                      'totalMatch': 0, 
@@ -113,7 +113,7 @@ turnChessPossibility = {
                   9: [0.05, 0.25, 0.35, 0.35],
                   10: [0.05, 0.25, 0.35, 0.35]}
 def chess_level(pop, turn) -> list[int]:
-    """根据人口和回合，返回一个含有棋子星级的list
+    """根据人口和回合，返回一个以棋子星级为值的list
 
     Args:
         pop (_type_): _description_
@@ -128,6 +128,7 @@ def chess_level(pop, turn) -> list[int]:
         rand = random()
         # print("pop= ",i, " randomValue: ",rand)
         if i == 0:
+            # 根据回合数必定获得这个星级棋子
             if turn == 1:
                 chessLevels.append(1)
                 continue
@@ -149,6 +150,7 @@ def chess_level(pop, turn) -> list[int]:
             elif turn == 8:
                 chessLevels.append(4)
                 continue
+        # 根据概率随机相应棋子
         if rand <= possibilities[0]:
             chessLevels.append(1)
         elif rand > possibilities[0] and \
@@ -162,10 +164,10 @@ def chess_level(pop, turn) -> list[int]:
     return chessLevels    
     
 turnPopulationRestriction = {
-                  1: [1,1], # 括号中是人口下限和上限
-                  2: [2,2],
-                  3: [2,2],
-                  4: [3,3],
+                  1: [1], # 括号中是每回合可能出现的人口
+                  2: [2],
+                  3: [2],
+                  4: [3],
                   5: [3,4],
                   6: [3,4],
                   7: [4,5],
@@ -173,6 +175,7 @@ turnPopulationRestriction = {
                   9: [4,5,6],
                   10: [4,5,6]}
 
+# 每一星棋子选择
 star1 = [1,2,3]
 star2 = [4,5,6,7,8,9]
 star3 = [10,11,12,13,14,15,16,17,18,19,21,22] # 20 还没加进去
@@ -298,7 +301,7 @@ def main():
         chessBattleResult_dict[cid]['averageDamageReceivedPerMatch'] = round(totalDamageReceived/totalBattles,3)
 
 
-
+    # 保存结果到excel
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Battle Data"

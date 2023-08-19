@@ -908,7 +908,9 @@ class deathBeam(skillInterface):
                          cd = 5,
                          type = "active",
                          description="灯笼鱼用死亡射线折磨一个随机对手，对对手造成大量不确定性伤害 （随机性很强的一个棋子，增加对局的不确定性）",
-                         castRange = castRange)
+                         castRange=3, 
+                         baseDamage=300, 
+                         ceilingDamage=600)
         self.baseDamage = baseDamage
         self.ceilingDamage = ceilingDamage
 
@@ -916,12 +918,18 @@ class deathBeam(skillInterface):
         target: chessInterface = None
         targetList = []
         for (uniqueID, chess) in caster.allChessDict.items():
-            if chess.team != caster.team and not chess.isDead: # 目标要活着
+            if chess.team != caster.team and not \
+                chess.isDead and \
+                dist(chess.position, caster.position) <= self.castRange : # 目标要活着
                 targetList.append(chess)
+        if targetList == []:
+            # 没有合适的对象
+            return False
         target = targetList[randint(0, len(targetList))] 
         damage = self.baseDamage + random()*(self.ceilingDamage-self.baseDamage)
         print(f"{currentTime/100}   {caster}对{target}使用了*{self}*,造成了{damage}点伤害")
         caster.deal_damage_to(opponent=target,damage= damage, currentTime=currentTime)
+        return True
 
 class anglerfish(chessInterface):
     def __init__(self,position = [3,3]):
@@ -933,7 +941,7 @@ class anglerfish(chessInterface):
                          attack_range = 2,
                          armor = 17,
                          health= 470,
-                         skill = deathBeam(castRange=3, baseDamage=300, ceilingDamage=600))
+                         skill = deathBeam())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -944,10 +952,21 @@ class anglerfish(chessInterface):
         chessInterface.uniqueID += 1
     
     def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime,caster= self,target=None)
-        return super().cast(implemented = True)
+        if self.skill.cast(currentTime=currentTime,caster= self,target=None):
+            # 如果施放成功
+            return super().cast(implemented = True)
 
 ############################################################################################################
+class electricChain(skillInterface):
+    def __init__(self, 
+                 skillName: str = "闪电链", 
+                 cd: float = 0, 
+                 type: str = "passive",
+                 description: str = "电鳗在攻击敌方的时候放电，有50%的概率电击范范围内的至多三个敌人（单一目标不会重复受到伤害）",
+                 castRange: float = 100) -> None:
+        super().__init__(skillName, cd, type, description, castRange)
+    
+
 class electric_eel(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "电鳗",id=19,
@@ -1035,6 +1054,25 @@ class turtle(chessInterface):
 # 4星
 #mammal
 ############################################################################################################
+class warSmash(skillInterface):
+    def __init__(self, skillName: str = "战争重碾",
+                 cd: float = 10, # 一锤定音
+                 type: str = "active", 
+                 description: str = "大象蓄力后向一个方向冲锋，对路径和周围的敌人造成伤害并且击退",
+                 castRange: float = 3,
+                 hold: float = 2.0 #蓄力时间
+                 ) -> None:
+        super().__init__(skillName, cd, type, description, castRange)
+        
+    def cast(self, currentTime: int, caster: chessInterface, target = None):
+        target = []
+        # 选定方向
+        
+        # 蓄力
+        
+        # 冲锋
+        print(f"{currentTime/100}  {caster}使用了{self}")        
+
 class elephant(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "大象",id=23,
@@ -1045,7 +1083,7 @@ class elephant(chessInterface):
                          attack_range = 2,
                          armor = 46,
                          health= 1600,
-                         skill = None)
+                         skill = warSmash())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1055,6 +1093,9 @@ class elephant(chessInterface):
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
+    def cast(self, currentTime: int = 0):
+        
+        return super().cast(currentTime, implemented = True)
 ############################################################################################################
 # old虎
 class bite(skillInterface):
@@ -1097,7 +1138,7 @@ class tiger(chessInterface):
         super().__init__(chessName = "老虎",id=24,
                          race = "mammal",
                          star = 4,
-                         attack = 150,
+                         attack = 140,
                          attack_interval=0.7,
                          attack_range = 1.5,
                          armor = 34,
@@ -1145,7 +1186,7 @@ class unicorn_b(chessInterface):
                          race = "insect",
                          star = 4,
                          attack = 112, # 有点低
-                         attack_interval=0.55,
+                         attack_interval=0.6,
                          attack_range = 4,
                          armor = 16,
                          health= 560,
@@ -1217,12 +1258,6 @@ class ensnarement(skillInterface):
         
     def move_to_target(self, caster:chessInterface, target: chessInterface, placeTaken: list = []):
         """找到一个目标旁边的随机地点
-
-        Args:
-            caster (chessInterface): 施法者
-            target (chessInterface): 施法目标
-            placeTaken (list, optional): _description_. Defaults to [].
-
         Returns:
             list[int]: 目标旁边的一个随机坐标
         """

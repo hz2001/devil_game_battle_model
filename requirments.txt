@@ -1,0 +1,4 @@
+# required files 
+openpyxl
+copy
+json
