@@ -271,6 +271,8 @@ class chessInterface:
             damage (float): _description_
             currentTime (int): _description_
         """
+        if opponent.isDead:
+            return True
         if self.id in {2,6,7,14,15,16,17,25,26} and opponent.id == 12: # 自己如果是虫，对方如果是犀牛，就减少自己对其造成的伤害
             damage = damage * (1-opponent.skill.reductionRate)
         if opponent.statusDict['vulnerable'] is not None:
@@ -314,7 +316,7 @@ class chessInterface:
         range 是n*n 的范围，而不是圈的范围，可以做优化 TODO
         
         return:
-            所有符合这个范围的，在棋盘之内的格子 list(position)
+            所有符合这个范围的，在棋盘之内的格子 list(position), 不会返回棋子
         '''
             # select (range*2+1)^2 area around self
         surrounding:list[list[int]] = []
@@ -323,6 +325,15 @@ class chessInterface:
                 if row in range(6) and col in range(5):
                     surrounding.append([row, col])
         return surrounding
+    
+    def get_ali_distances(self) -> list[tuple[list, chessInterface]]:
+        """返回一个 (position, chessInterface) 的tuple list
+
+        Returns:
+            list[tuple[list, chessInterface]]: _description_
+        """
+        return [(chess.position, chess) for chess in self.teamDict.values()]
+            
 
     def opponent_ids(self) -> list[int]:
         '''返回所有对方棋子的id的 list'''
