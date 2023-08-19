@@ -300,8 +300,8 @@ class battle:
         # self.board_print()
 
         # reset everything 
-        # for uid, chess in self.allChessDict.items():
-        #     chess.reset()
+        for uid, chess in self.allChessDict.items():
+            chess.reset()
         self.board_clear()
         # return the won team 
         return wonTeam, current_time
