@@ -95,6 +95,8 @@ class disarmed(statusInterface):
                          statusDuration=statusDuration,
                          statusType = "disable")
         self.statusOwner = statusOwner
+        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
+
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
@@ -134,6 +136,8 @@ class silenced(statusInterface):
                          statusDuration=statusDuration,
                          statusType = "disable")
         self.statusOwner = statusOwner
+        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
+
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
@@ -153,6 +157,8 @@ class broken(statusInterface):
                          statusDuration=statusDuration,
                          statusType = "disable")
         self.statusOwner = statusOwner
+        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了！")
+
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")

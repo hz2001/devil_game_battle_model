@@ -136,7 +136,10 @@ class ant(chessInterface):
                          attack_range = 1.5,
                          armor=9,
                          health=180,
-                         skill = None)
+                         skill = threeStinkers( attack = self.attack, 
+                                   armor= self.armor, 
+                                   health= self.health, 
+                                   maxHP=self.maxHP))
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -145,10 +148,6 @@ class ant(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        self.skill = threeStinkers( attack = self.attack, 
-                                   armor= self.armor, 
-                                   health= self.health, 
-                                   maxHP=self.maxHP)
 
     def cast(self,currentTime: int):
         ''' bigger
@@ -253,7 +252,7 @@ class llama(chessInterface):
                          attack_range = 2,
                          armor=13,
                          health=410,
-                         skill = None)
+                         skill = hex())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -262,7 +261,6 @@ class llama(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        self.skill = hex()
 
     def cast(self,currentTime: int):
         ''' hex an opponent based on its 星级
@@ -345,7 +343,7 @@ class wolf(chessInterface):
 
 class wolfMinion(wolf):
     def __init__(self, allChessDict, teamDict, currentTime:int, position = [3, 3]):
-        super().__init__(position, skill = None)
+        super().__init__(position, skill =None)
         self.chessName = "狼分身"
         print(f"      {self}被召唤了!")
         self.attack = self.attack/3
@@ -579,8 +577,7 @@ class normalHeal(skillInterface):
             target.heal(self.healAmount)
 # 麋鹿
 class heal_deer(chessInterface):
-    def __init__(self,position = [3,3],
-                 skill: normalHeal = normalHeal()):
+    def __init__(self,position = [3,3]):
         super().__init__(chessName = "麋鹿",id=10,
                          race = "mammal",
                          star = 3,
@@ -589,8 +586,7 @@ class heal_deer(chessInterface):
                          attack_range = 2.5,
                          armor=19,
                          health=830,
-                         skill = None)
-        self.skill = skill
+                         skill = normalHeal())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -614,7 +610,7 @@ class monkey(chessInterface):
                          race = "mammal",
                          star = 3,
                          attack = 74,
-                         attack_interval=0.7, # 有可能太高
+                         attack_interval=0.75, # 有可能太高
                          attack_range = 3,
                          armor = 14,
                          health= 288,
@@ -779,7 +775,7 @@ class holyLight(skillInterface):
             if dist(chess.position, caster.position) < self.diameter:
                 if chess.team != caster.team and not chess.isDead:
                     caster.deal_damage_to(opponent=chess,damage = self.damage,currentTime=currentTime)
-                else:
+                elif chess.team == caster.team and not chess.isDead:
                     chess.heal(self.damage)
 
 class fireworm(chessInterface):
@@ -792,7 +788,7 @@ class fireworm(chessInterface):
                          attack_range = 2,
                          armor = 24,
                          health= 650,
-                         skill = None)
+                         skill = holyLight())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -962,30 +958,46 @@ class electricChain(skillInterface):
                  skillName: str = "闪电链", 
                  cd: float = 0, 
                  type: str = "passive",
-                 chance: float = 0.5,
+                 chance: float = 0.7,
                  damage: float =  70,
                  description: str = "电鳗在攻击敌方的时候放电，有50%的概率电击范范围内的至多三个敌人（单一目标不会重复受到伤害）",
-                 castRange: float = 2) -> None:
+                 castRange: float = 2,
+                 bounceTime: int = 3) -> None:
         super().__init__(skillName, cd, type, description, castRange)
         self.chance = chance
         self.damage = damage
+        self.bounceTime = bounceTime
 
     def cast(self, currentTime:int, caster: chessInterface, target: chessInterface):
-        super().cast(currentTime, caster, target)
-        # TODO
-    
+        if random() > self.chance: # 计算出发几率
+            return 
+        affectedChess = [target]
+        for i in range(self.bounceTime):
+            print(f"{currentTime/100}  {caster}对{target}使用了{self},造成了{self.damage}点伤害")
+            caster.deal_damage_to(currentTime = currentTime, opponent=target, damage = self.damage)
+            # find new target
+            positionList = target.get_ali_distances()
+            shortest = 100
+            for aliPos, chess in positionList:
+                aliDist = dist(aliPos, target.position)
+                if aliDist< self.castRange and aliDist < shortest and chess not in affectedChess:
+                    target = chess
+                    shortest = aliDist
+                    affectedChess.append(chess)
+            if shortest == 100 : # 找不到合适的目标
+                break
 
 class electric_eel(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "电鳗",id=19,
                          race = "marine",
                          star = 3,
-                         attack = 65,
+                         attack = 70,
                          attack_interval=0.9,
                          attack_range = 3,
                          armor = 18,
                          health= 560,
-                         skill = None)
+                         skill = electricChain())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -994,6 +1006,11 @@ class electric_eel(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+    
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
+        damage = super().do_attack(opponent, currentTime, coefficient)
+        self.skill.cast(currentTime, caster= self, target = opponent)
+        return damage
 
 ############################################################################################################
 class crab(chessInterface):
@@ -1256,24 +1273,32 @@ class unicorn_b(chessInterface):
 ############################################################################################################
 class ensnarement(skillInterface):
     def __init__(self, skillName: str = "蛛网缠绕",
-                 cd: float = 14, 
+                 cd: float = 0, 
+                 secondTimeCD: float = 14,
                  duration: float = 5,
                  type: str = "active",
                  description: str = "蜘蛛跳跃到对方攻击力最高的人的身旁，并且缠绕住他，使其不能攻击",
                  castRange: float = 100) -> None:
         super().__init__(skillName, cd, type, description, castRange)
         self.duration = duration
+        self.secondTimeCD = secondTimeCD
         
-    def move_to_target(self, caster:chessInterface, target: chessInterface, placeTaken: list = []):
+    def find_pos_near_target(self, caster:chessInterface, target: chessInterface):
         """找到一个目标旁边的随机地点
         Returns:
             list[int]: 目标旁边的一个随机坐标
         """
+        placeTaken: list = []
+        for chess in caster.allChessDict.values():
+            placeTaken.append(chess.position) # 找到不能去的地方
         positions = target.get_surrounding(1)
         for p in positions.copy():
             if p in placeTaken:
                 positions.remove(p)
-        return positions[randint(0,len(positions))] 
+        if positions != []:
+            return positions[randint(0,len(positions))] 
+        else: 
+            return None
         
     def cast(self, currentTime:int, caster:chessInterface, target: chessInterface= None):
         target = None
@@ -1281,9 +1306,11 @@ class ensnarement(skillInterface):
         for (uniqueID, chess) in caster.allChessDict.items():
             if chess.team != caster.team and chess.attack > highestAttack and not chess.isDead:
                 target = chess
-        pos = self.move_to_target(caster = caster, target= target)
+        pos = self.find_pos_near_target(caster = caster, target= target)
+        if pos is None:
+            return False
+        print(f"{currentTime/100}  {caster}对{target}使用了{self},移动到了{pos}")
         caster.position = pos
-        # TODO: 更新棋盘
         if target.statusDict['disarmed'] is not None:
             #  增加缴械时间
             target.statusDict['disarmed'].addBuff(currentTime, self.duration)
@@ -1292,7 +1319,8 @@ class ensnarement(skillInterface):
             target.statusDict['disarmed'] = disarmed(currentTime=currentTime,
                                                      statusOwner=target,
                                                      statusDuration=self.duration) 
-        
+        self.cd = self.secondTimeCD
+        return True
 class spider(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "蜘蛛", id=26,
@@ -1314,8 +1342,8 @@ class spider(chessInterface):
         chessInterface.uniqueID += 1
 
     def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime,caster= self)
-        return super().cast(implemented = True)
+        if self.skill.cast(currentTime=currentTime,caster= self):
+            return super().cast(implemented = True)
 
 #marine
 ############################################################################################################
@@ -1373,7 +1401,7 @@ class shark(chessInterface):
                          attack_range = 1.5,
                          armor = 42,
                          health= 1200,
-                         skill = None)
+                         skill = abyssBite())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
