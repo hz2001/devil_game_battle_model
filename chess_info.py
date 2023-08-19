@@ -728,9 +728,9 @@ class silenceAttack(skillInterface):
         super().cast(currentTime=currentTime, caster = caster, target = target)
         if target.statusDict['silenced'] is not None:
             # 增加时长
-            target.statusDict['silence'].addBuff(currentTime=currentTime,duration = self.duration)
+            target.statusDict['silenced'].addBuff(currentTime=currentTime,duration = self.duration)
         else:
-            target.statusDict['silence'] = silenced(currentTime=currentTime,
+            target.statusDict['silenced'] = silenced(currentTime=currentTime,
                                                     statusDuration=self.duration,
                                                     statusOwner = target)
 class butterfly(chessInterface):
@@ -903,14 +903,14 @@ class scorpion(chessInterface):
 
 ############################################################################################################
 class deathBeam(skillInterface):
-    def __init__(self,castRange:float, baseDamage:float, ceilingDamage:float) -> None:
+    def __init__(self,
+                baseDamage=300, 
+                ceilingDamage=600) -> None:
         super().__init__(skillName= "死亡射线",
                          cd = 5,
                          type = "active",
                          description="灯笼鱼用死亡射线折磨一个随机对手，对对手造成大量不确定性伤害 （随机性很强的一个棋子，增加对局的不确定性）",
-                         castRange=3, 
-                         baseDamage=300, 
-                         ceilingDamage=600)
+                         castRange=3)
         self.baseDamage = baseDamage
         self.ceilingDamage = ceilingDamage
 
@@ -962,9 +962,17 @@ class electricChain(skillInterface):
                  skillName: str = "闪电链", 
                  cd: float = 0, 
                  type: str = "passive",
+                 chance: float = 0.5,
+                 damage: float =  70,
                  description: str = "电鳗在攻击敌方的时候放电，有50%的概率电击范范围内的至多三个敌人（单一目标不会重复受到伤害）",
-                 castRange: float = 100) -> None:
+                 castRange: float = 2) -> None:
         super().__init__(skillName, cd, type, description, castRange)
+        self.chance = chance
+        self.damage = damage
+
+    def cast(self, currentTime:int, caster: chessInterface, target: chessInterface):
+        super().cast(currentTime, caster, target)
+        # TODO
     
 
 class electric_eel(chessInterface):
@@ -1190,7 +1198,7 @@ class unicorn_b(chessInterface):
                          attack_range = 4,
                          armor = 16,
                          health= 560,
-                         skill = None)
+                         skill = rebirth())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1201,49 +1209,49 @@ class unicorn_b(chessInterface):
         chessInterface.uniqueID += 1
         self.revived = False
 
-    # def cast(self, currentTime: int):
-    #     self.skill.cast(currentTime=currentTime,caster=self,target=self)
-    #     return super().cast(implemented = True)
+    def cast(self, currentTime: int):
+        self.skill.cast(currentTime=currentTime,caster=self,target=self)
+        return super().cast(implemented = True)
     
-    # def can_attack(self) -> bool:
-    #     if 'reviving' not in self.statusDict:
-    #         return super().can_attack()
-    #     else:
-    #         return False
+    def can_attack(self) -> bool:
+        if 'reviving' not in self.statusDict:
+            return super().can_attack()
+        else:
+            return False
 
-    # def can_cast(self) -> bool:
-    #     if 'reviving' not in self.statusDict:
-    #         return super().can_cast()
-    #     else:
-    #         return False
+    def can_cast(self) -> bool:
+        if 'reviving' not in self.statusDict:
+            return super().can_cast()
+        else:
+            return False
 
-    # def check_death(self, currentTime:int) -> bool:
-    #     '''
-    #     检查当前棋子是否死亡，并且做出相应操作
-    #     '''
-    #     if self.health <= 0:
-    #         if self.revived:
-    #             if 'reviving' in self.statusDict:
-    #                 self.health = 1
-    #                 return False
-    #             else:
-    #                 self.deathTime = currentTime
-    #                 # remove this chess from opponent's team list
-    #                 print()
-    #                 print(f"    {self} 已经被打败!")
-    #                 print()
-    #                 self.isDead = True # 标记死亡
-    #                 self.position=[-1,-1] # 移除棋盘
-    #                 print(self.teamDict, self.uniqueID)
-    #                 del self.teamDict[self.uniqueID]
-    #                 return True
-    #         else:
-    #             self.cast(currentTime=0)
-    #             self.health = 1
-    #             self.revived = True
-    #             return False
-    #     else:
-    #         return False
+    def check_death(self, currentTime:int) -> bool:
+        '''
+        检查当前棋子是否死亡，并且做出相应操作
+        '''
+        if self.health <= 0:
+            if self.revived:
+                if 'reviving' in self.statusDict:
+                    self.health = 1
+                    return False
+                else:
+                    self.deathTime = currentTime
+                    # remove this chess from opponent's team list
+                    print()
+                    print(f"    {self} 已经被打败!")
+                    print()
+                    self.isDead = True # 标记死亡
+                    self.position=[-1,-1] # 移除棋盘
+                    print(self.teamDict, self.uniqueID)
+                    del self.teamDict[self.uniqueID]
+                    return True
+            else:
+                self.cast(currentTime=0)
+                self.health = 1
+                self.revived = True
+                return False
+        else:
+            return False
         
 ############################################################################################################
 class ensnarement(skillInterface):
