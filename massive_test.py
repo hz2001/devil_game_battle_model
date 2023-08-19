@@ -241,7 +241,7 @@ def random_battle(turn: int, n):
         newBattle.board_print()
         newBattle.addRedTeam(redTeam)
         newBattle.addBlueTeam(blueTeam)
-        wonTeam, matchLength = newBattle.battle_with_skills_test(recordDict=chessBattleResult_dict)
+        wonTeam, matchLength = newBattle.battle_with_skills_test()
         
         for (uniqueID, chess) in newBattle.allChessDict.items():
             chessBattleResult_dict[chess.id]['totalMatch'] += 1

@@ -220,7 +220,7 @@ class battle:
             
         # print(self.allChessDict)
 
-    def battle_with_skills_test(self, recordDict: dict):
+    def battle_with_skills_test(self):
         # 对战测试版，会记录棋子的详细信息
         # self.board_print()
         current_time = 0
@@ -279,8 +279,8 @@ def main():
     # blueTeam = [tiger(position=[3,3]),
     #             anglerfish(position=[4,0]),hippo(position=[4,2]),
     #            bee(position=[5,2]),fireworm(position=[5,4])]ß
-    redTeam = [hippo(position = [2,2]),electric_eel(position = [0,2])]
-    blueTeam = [spider(position = [5,2])]
+    redTeam = [hippo(position = [0,3]),electric_eel(position = [0,2])]
+    blueTeam = [fireworm(position = [5,2])]
 
 
     newBattle.addRedTeam(redTeam)

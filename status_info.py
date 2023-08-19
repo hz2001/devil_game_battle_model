@@ -242,9 +242,10 @@ class summoned(statusInterface):
 class dispersion_status(statusInterface):
     def __init__(self,
                  currentTime: int,
-                 statusOwner: chessInterface) -> None:
+                 statusOwner: chessInterface,
+                 duration: float) -> None:
         super().__init__(statusName= "反伤",
-                 statusDuration = 2.5,
+                 statusDuration = duration,
                  statusType = "special",
                  currentTime=currentTime
                  )
