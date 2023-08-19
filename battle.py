@@ -149,25 +149,13 @@ class battle:
                 if self.board[row][col] is not None and \
                     self.board[row][col] == chessToBeMoved and \
                         [row, col] != chessToBeMoved.position: # means we need to remove
-                    # print(self.board[row][col])
-                    # print(chessToBeMoved)
-                    # print(currentPosition)
-                    # print(chessToBeMoved.position)
                     self.board[row][col] = None
                     showNewBoard = True
-                    # print()
-                    # print(self.board[row][col])
-                    # print(currentPosition)
                     break
                 elif self.board[row][col] is None and \
                     [row,col] == chessToBeMoved.position and \
                     'summoned' in chessToBeMoved.statusDict.keys():
                     showNewBoard = True
-                    # print(self.board[row][col])
-                    # print(chessToBeMoved)
-                    # print(currentPosition)
-                    # print(chessToBeMoved.position)
-                    # self.add_chess_to_board(chessToBeAdded=chessToBeMoved)
                     # 说明有棋子被召唤需要更新棋盘
                     break
 
@@ -179,30 +167,8 @@ class battle:
             showNewBoard = False
             pass
         if showNewBoard:
-            # print(chessToBeMoved)
-            # print(currentPosition)
-            # print(chessToBeMoved.position)
             self.board_print()
             pass
-
-    def get_hate_mechanism(self,attacker:chessInterface) ->int:
-        '''
-        这个方法意在找到当前棋子的下一个攻击对象
-            返回值为敌方棋子库中的棋子uniqueID
-        '''
-        # TODO 重新计算目标距离
-        # locate attacker on the board
-        # attack the closest enemy in its range unless it has special target
-        opponents_distances = self.opponent_distances(attacker)
-        opponents_distances = sorted(opponents_distances)
-        IDtoBeAttacked = opponents_distances[0][1]
-        # 如果下两个棋子的距离相同导致优先级一样怎么办？那就看上次受到的伤害来自于谁
-        # TODO: implement this
-        # use 0.3 sec to move to the **empty** position where it can reach the next opponent,
-        # if this enemy is not in the range of attack,
-
-
-        return IDtoBeAttacked
     
     # 对战
     def battle_with_skills(self):
@@ -307,33 +273,14 @@ class battle:
         return wonTeam, current_time
 
 def main():
-    # tested:{sea_hedgehog(position = [3,3]), # 海胆， 熊，蜜蜂，羊，螳螂, 蝎子，麋鹿
-    #                 bear(position=[3,4]),
-    #                 bee(position = [4,4]),
-    #                 mantis(position=[3,2]),
-    #                 llama(position=[2,2]),
-    #                 heal_deer(position = [1,2]), 
-    #                 scorpion(position=[2,4])}
-    # not_tested = {littleUglyFish(),
-    #               ant(),
-    #               hippo(),
-    #               shark(),
-    #               monkey(),
-    #               ladybug(),
-    #               wolf(),
-    #               rabbit(),
-    #               butterfly(), 
-    #               octpus(), 
-    #               swallower() }
-    
     newBattle = battle()
     # redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
     #            mantis(position=[1,4]),unicorn_b(position=[2,4])]
     # blueTeam = [tiger(position=[3,3]),
     #             anglerfish(position=[4,0]),hippo(position=[4,2]),
     #            bee(position=[5,2]),fireworm(position=[5,4])]ß
-    redTeam = [ant(position = [2,2])]
-    blueTeam = [ant(position = [3,2])]
+    redTeam = [hippo(position = [2,2]),electric_eel(position = [0,2])]
+    blueTeam = [spider(position = [5,2])]
 
 
     newBattle.addRedTeam(redTeam)
