@@ -164,7 +164,7 @@ class battle:
             self.add_chess_to_board(chessToBeAdded=chessToBeMoved)
         else:
             # 棋子死掉了，不重新添加棋子
-            showNewBoard = False
+            # showNewBoard = False
             pass
         if showNewBoard:
             self.board_print()
@@ -278,9 +278,9 @@ def main():
     #            mantis(position=[1,4]),unicorn_b(position=[2,4])]
     # blueTeam = [tiger(position=[3,3]),
     #             anglerfish(position=[4,0]),hippo(position=[4,2]),
-    #            bee(position=[5,2]),fireworm(position=[5,4])]ß
-    redTeam = [hippo(position = [0,3]),electric_eel(position = [0,2])]
-    blueTeam = [fireworm(position = [5,2])]
+    #            bee(position=[5,2]),fireworm(position=[5,4])]
+    redTeam = [octopus(position = [2,2])]
+    blueTeam = [fireworm(position = [3,0]),fireworm(position = [3,1]),fireworm(position = [4,3]),fireworm(position = [5,4])]
 
 
     newBattle.addRedTeam(redTeam)

@@ -165,7 +165,7 @@ class broken(statusInterface):
             self.statusOwner.statusDict['broken'] = None
             return False
         else:
-            # 仍然被缴械，如果有被动技能，跳过被动技能判定
+            # 仍然被破坏，如果有被动技能，跳过被动技能判定
             return True
 
 class attack_interval_change(statusInterface):
@@ -404,6 +404,28 @@ class reviving(statusInterface):
         else:
             # print(self.timeElapsed,self.statusDuration)
             self.timeElapsed += 5
+            return True
+
+class whisper(statusInterface):
+    def __init__(self, 
+                 currentTime: int,
+                 statusDuration: float,
+                 stuff: str,
+                 statusOwner: chessInterface) -> None:
+        super().__init__(statusName = "低语",
+                         currentTime = currentTime,
+                         statusDuration=statusDuration,
+                         statusType = "buff")
+        self.statusOwner = statusOwner  
+        print(f"    {statusOwner} {stuff}")
+
+    def activate(self, currentTime: float) -> bool:
+        if currentTime > self.statusEnd:
+            self.statusOwner.statusDict.pop('whisper', None)
+            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
+            return False
+        else:
+            # print(self.statusEnd)
             return True
 
 
