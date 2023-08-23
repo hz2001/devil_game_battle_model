@@ -1430,6 +1430,40 @@ class spider(chessInterface):
 
 #marine
 ############################################################################################################
+class tentacles(skillInterface):
+    def __init__(self, skillName: str = "群体缠绕",
+                 cd: float = 7,
+                 type: str = "active",
+                 description: str = "群体缠绕",
+                 damage:float = 50,
+                 duration:float = 2) -> None:
+        super().__init__(skillName, cd, type, description)
+        self.damage = damage
+        self.duration = duration
+
+    def cast(self, currentTime, caster: chessInterface, target: chessInterface = None):
+        arearowrange = 4
+        areacolrange = 3
+        minr = randint(0,6-arearowrange)
+        minc = randint(0,5-areacolrange)
+        area:list[list[int]] = []
+        for row in range(minr, minr + arearowrange):
+            for col in range(minc, minc + areacolrange):
+                area.append([row, col])
+        for (chessID,chess) in caster.allChessDict.items():
+            if chess.team != caster.team and chess.position in area and not chess.isDead:
+                if chess.statusDict['broken'] is None:
+                    chess.statusDict['broken'] = broken(currentTime=currentTime,
+                                                        statusDuration=self.duration,
+                                                        statusOwner=chess)
+                    chess.statusDict['whisper'] = whisper(currentTime=currentTime,
+                                                          statusDuration=self.duration,
+                                                          stuff="ℼ潤瑣灹⁥瑨汭㰾瑨汭㰾敨摡㰾敭慴挠慨獲瑥∽瑵ⵦ㘱㸢琼瑩敬唾瑮瑩敬⁤潄畣敭瑮⼼楴汴㹥⼼敨摡㰾潢祤猠祴敬∽慰摤湩㩧〱硰㸢뷤ꖟ臩蒚ꓥ骤뫤㲆戯摯㹹⼼瑨汭",
+                                                          statusOwner=chess)
+                else:
+                    chess.statusDict['broken'].addBuff(currentTime, self.duration)
+                caster.deal_damage_to(opponent=chess,damage = self.damage, currentTime=currentTime)
+
 class octopus(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "章鱼",id=27,
@@ -1440,7 +1474,7 @@ class octopus(chessInterface):
                          attack_range = 2,
                          armor = 33,
                          health= 1550,
-                         skill = None)
+                         skill = tentacles())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1449,6 +1483,9 @@ class octopus(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+    def cast(self, currentTime: int):
+        self.skill.cast(currentTime=currentTime,caster= self)
+        return super().cast(implemented = True)
 
 
 ############################################################################################################

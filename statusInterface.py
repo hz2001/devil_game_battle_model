@@ -32,5 +32,5 @@ class statusInterface:
         print("implement the activate method!!!!")
         pass
     def addBuff(self, currentTime:int, duration:float):
-        print(f"{currentTime}    {self.statusOwner}又被{self.statusName}了")
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
         self.statusEnd += int(duration * 100)
