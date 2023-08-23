@@ -19,6 +19,8 @@ class Player:
         self.goldToNextPop = 1
         self.cost2Chance = 0 # 抽到2星卡的概率
         self.hp = 100
+    def __eq__(a, b):
+        return a.id == b.id
 
     def __repr__(self) -> str:
         if self.id == 0:
