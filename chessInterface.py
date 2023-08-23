@@ -48,7 +48,7 @@ class chessInterface:
                  statusDict: dict[str, statusInterface] = {},
                  team: int = 0,
                  evasion: float = 0,
-                 moving_speed = 0.3 # 一个棋子从一个格子挪到下一个格子所用的时间
+                 moving_speed = 0.5 # 一个棋子从一个格子挪到下一个格子所用的时间
                  ):
         self.isDead = False # 棋子存活状态
         self.chessName = chessName # 棋子名称

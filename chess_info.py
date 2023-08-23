@@ -1499,3 +1499,170 @@ class shark(chessInterface):
         self.skill.cast(currentTime=currentTime,caster = self, target = opponent)
         return super().do_attack(opponent, currentTime, coefficient)
         
+
+
+# 魔鬼的棋子
+
+class minionDevil(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "鬼炮灰", id = 100,
+                         star = 1,
+                         race = 'devil',
+                         attack = 20, 
+                         attack_interval = 1.2,
+                         attack_range = 1.5, 
+                         armor = 10, 
+                         health = 200, 
+                         skill = None,
+                         moving_speed = 0.3)
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+        
+
+class guardDevil(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "鬼护卫", id = 101,
+                         star = 2,
+                         race = 'devil',
+                         attack = 40, 
+                         attack_interval = 1.2,
+                         attack_range = 1.5, 
+                         armor = 18, 
+                         health = 500, 
+                         skill = None)
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+
+
+class trollDevilMelee(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "近战巨魔", id = 102,
+                         star = 3,
+                         race = 'devil',
+                         attack = 80, 
+                         attack_interval = 0.9,
+                         attack_range = 1.5, 
+                         armor = 30, 
+                         health = 1200, 
+                         skill = None)
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+
+
+class trollDevilRanged(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "远程巨魔", id = 103,
+                         star = 3,
+                         race = 'devil',
+                         attack = 70, 
+                         attack_interval = 0.7,
+                         attack_range = 2.5, 
+                         armor = 20, 
+                         health = 600, 
+                         skill = None)
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+
+
+class devil_food(skillInterface):
+    def __init__(self,
+                 skillName: str = "魔鬼食粮",
+                 cd: float = 1,
+                 type: str = "active",
+                 description: str = "只要技能释放者还活着，队友身上就一直会有buff",
+                 enhanceRatio: float = 0.2,
+                 duration: float = 1) -> None:
+        super().__init__(skillName, cd, type, description)
+        self.enhanceRatio = enhanceRatio
+        self.duration = duration
+    
+    def cast(self, currentTime:int, caster:chessInterface, target: chessInterface = None):
+        for (chessID,chess) in caster.teamDict.items():
+            print(f"{currentTime/100}   {caster}对{chess}使用了{self}")
+            if chess.statusDict['attack_interval_change'] is not None:
+                # 分别记录攻击时长
+                chess.statusDict['attack_interval_change'].addBuff(currentTime, self.duration, self.enhanceRatio)
+            else:
+                chess.statusDict['attack_interval_change'] = attack_interval_change(statusOwner=chess,
+                                                                                currentTime=currentTime,
+                                                                                changeRatio=self.enhanceRatio,
+                                                                                statusDuration=self.duration)
+class trollDevilSupplier(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "辅助巨魔", id = 104,
+                         star = 3,
+                         race = 'devil',
+                         attack = 40, 
+                         attack_interval = 1,
+                         attack_range = 1.5, 
+                         armor = 15, 
+                         health = 400, 
+                         skill = devil_food())
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+
+    def cast(self, currentTime):
+        self.skill.cast(currentTime=currentTime, caster=self)
+        return super().cast(implemented = True)
+
+class splashDamage(skillInterface):
+    def __init__(self) -> None:
+        super().__init__(skillName = "溅射打击",
+                         cd = 0,
+                         type= "passive", 
+                         description="古龙突出的火焰会对目标身边的敌人造成50%伤害", 
+                         castRange=100)
+
+    def cast(self, currentTime: int, caster:chessInterface, target: chessInterface, damage:float):
+        positions = target.get_surrounding()
+        totalDamage = damage
+        for chess in caster.allChessDict.values():
+            if chess.position in positions:
+                print(f'{chess}被{caster}的攻击溅射了')
+                totalDamage += damage*0.5
+                caster.deal_damage_to(opponent=chess,damage=damage*0.5,currentTime=currentTime)
+        return totalDamage
+    
+class devilDragon(chessInterface):
+    def __init__(self, position = [3,3]):
+        super().__init__(chessName = "骨龙", id = 105,
+                         star = 4,
+                         race = 'devil',
+                         attack = 400, 
+                         attack_interval = 0.9,
+                         attack_range = 4, 
+                         armor = 80, 
+                         health = 3500, 
+                         skill = splashDamage())
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+    
+    
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
+        damage = super().do_attack(opponent, currentTime, coefficient)
+        damage += self.skill.cast(currentTime, self, opponent) # 计算溅射伤害
+        return damage
