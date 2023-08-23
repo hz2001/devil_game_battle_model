@@ -13,8 +13,6 @@ statusDictExample= {
 #### 棋子状态
 ##################################################
 
-
-# TODO
 class moving(statusInterface):
     def __init__(self,
                  currentTime: int,
