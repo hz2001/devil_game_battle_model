@@ -206,16 +206,27 @@ class battle:
                         # self.board_print()
         if self.teamAlive(self.redTeamDict):
             print(f"{colored('红','red')}方获胜!")
+            wonTeam = 'red'
         else:
             print(f"{colored('蓝','blue')}方获胜!")
+            wonTeam = 'blue'
         
-        self.board_print()
-        for uniqueID, chess in self.allChessDict.items():
-            print(chess, chess.getTotalDamageDealt())
+        # 判定玩家掉血
+        damage = 0
+        for row in self.board:
+            for slot in row:
+                if slot is not None:
+                    damage += 1 
+        
+        # self.board_print()
+        # for uniqueID, chess in self.allChessDict.items():
+        #     print(chess, chess.getTotalDamageDealt())
         # reset everything 
         for uid, chess in self.allChessDict.items():
             chess.reset()
         self.board_clear()
+        # return the won team 
+        return wonTeam, damage, current_time
         
             
         # print(self.allChessDict)

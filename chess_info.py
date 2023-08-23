@@ -134,12 +134,13 @@ class ant(chessInterface):
                          attack = 20,
                          attack_interval = 1,
                          attack_range = 1.5,
-                         armor=9,
-                         health=180,
-                         skill = threeStinkers( attack = self.attack, 
+                         armor=11,
+                         health=250,
+                         skill = None)
+        self.skill = threeStinkers( attack = self.attack, 
                                    armor= self.armor, 
                                    health= self.health, 
-                                   maxHP=self.maxHP))
+                                   maxHP=self.maxHP)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -817,14 +818,14 @@ class holyLight(skillInterface):
         self.damage = damage
 
     def cast(self, currentTime: int, caster:chessInterface, target: chessInterface=None):
-        print(f"{currentTime}  {caster}对身旁半径为{self.diameter}的范围释放了{self}")
+        print(f"{currentTime/100}  {caster}对身旁半径为{self.diameter}的范围释放了{self}")
         for (uniqueID, chess) in caster.allChessDict.items():
             if dist(chess.position, caster.position) < self.diameter:
                 if chess.team != caster.team and not chess.isDead:
-                    print(f"{currentTime}  {chess}被{self}伤害了")
+                    print(f"{currentTime/100}  {chess}被{self}伤害了")
                     caster.deal_damage_to(opponent=chess,damage = self.damage,currentTime=currentTime)
                 elif chess.team == caster.team and not chess.isDead:
-                    print(f"{currentTime}  {chess}被{self}治疗了")
+                    print(f"{currentTime/100}  {chess}被{self}治疗了")
                     chess.heal(self.damage)
 
 class fireworm(chessInterface):
