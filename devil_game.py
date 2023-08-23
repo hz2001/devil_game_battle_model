@@ -44,9 +44,10 @@ class devil(Player):
                                      trollDevilSupplier(position = positions[0])]
             case 8:
                 self.chessOnField = [devilDragon(position = [4,2])] 
-                
             case 10:
                 self.chessOnField = [] # ???
+            case _ :
+                return None
                 
         return deepcopy(self.chessOnField)
 
@@ -59,8 +60,15 @@ class game:
         self.playerID = 0
         self.turn = 0
         self.alivePlayers: list[int] = [] # 记录存活玩家的id
-        self.NPC = {1: None, 2: None, 3: None, # preparing turns
-                    4: None, 6: None, 8: None, 10: None} # devil turns  
+        self.devil = devil()
+        self.devilChessListOnTurn = {1: self.devil.getChessList(1), 
+                    2: self.devil.getChessList(2), 
+                    3: self.devil.getChessList(3), # preparing turns
+                    
+                    4: self.devil.getChessList(4), 
+                    6: self.devil.getChessList(6), 
+                    8: self.devil.getChessList(8), 
+                    10: self.devil.getChessList(10)} # devil turns  
     
     def check_wonPlayer(self) -> int:
         alivePlayerCounter = 4
@@ -113,7 +121,11 @@ class game:
 
     def battleOf2(self, homePlayerID, guestPlayerID):
         # playerID1 是主场玩家，playerID2是客场玩家 只有主场玩家输才会掉血
-        redTeam = self.flipAllChess(self.chessLists[guestPlayerID])
+        if guestPlayerID != 666:
+            redTeam = self.chessLists[guestPlayerID]
+        else:
+            redTeam = self.devilChessListOnTurn[self.turn]
+        redTeam = self.flipAllChess(redTeam)
         blueTeam = self.chessLists[homePlayerID]
         newBattle = battle()
         newBattle.addRedTeam(redTeam= redTeam)
@@ -158,27 +170,21 @@ class game:
                 self.chessLists[playerID] = self.players[playerID].new_turn()
             # 锁定回合，战斗阶段
             match self.turn:
-                case 1:
-                    for player in self.alivePlayers:
-                        opponent = self.NPC[1]
-                        self.battleOf2()
-                case 2:
-                    pass
-                case 3:
-                    pass
-                case 4:
-                    pass
-                case 6:
-                    pass
-                case 8:
-                    pass
-                case 10:
-                    pass
-                case _:
-                    pass
+                case 1 | 2 | 3:
+                    for playerID in self.alivePlayers:
+                        self.battleOf2(playerID,666)
+                case 4 | 6 | 8 | 10:
+                    # 选人
+                    playerChoiceID = self.alivePlayers[randint[0,len(self.alivePlayers)]]
+                    print(f"玩家{playerChoiceID}被恶魔选中了，祝你好运")
+                    for playerID in self.alivePlayers:
+                        if playerID != playerChoiceID:
+                            opponentID = self.findOpponent(playerID=playerID)
+                        else:
+                            opponentID = 666
+                        self.battleOf2(playerID,opponentID)
+                case _: # 玩家对战
+                    for playerID in self.alivePlayers:
+                        self.battleOf2(playerID,self.findOpponent(playerID=playerID))
             self.chessLists: dict[int, Player] = [] # 重置
-                
-
-
-                # 战斗阶段
-                # 分配战斗
+        print(self.alivePlayers,"胜出")
