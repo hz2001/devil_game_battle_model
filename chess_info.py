@@ -1093,15 +1093,17 @@ class strikeThrough(skillInterface):
                  cd: float = 5.5, 
                  type: str = "active", 
                  description: str = "一角鲸冲锋并且穿刺目标英雄，造成150伤害并且 两秒内 降低目标护甲", 
-                 castRange: float = 100,
+                 castRange: float = 1.5,
                  duration: float = 2,
                  armorChange = - 10) -> None:
         super().__init__(skillName, cd, type, description, castRange)
         self.duration = duration 
         self.armorChange = armorChange
         
-    def cast(self, currentTime:int, caster: chessInterface, target: chessInterface = None):
+    def cast(self, currentTime:int, caster: chessInterface, target: chessInterface = None) -> bool:
         target:chessInterface = caster.get_hate_mechanism()
+        if dist(target.position, caster.position) > self.castRange:
+            return False
         super().cast(currentTime, caster, target)
         target.statusDict['frail']
         if target.statusDict["frail"] is None:
@@ -1112,6 +1114,7 @@ class strikeThrough(skillInterface):
                                                 caster = caster)
         else:
             target.statusDict["frail"].addBuff(currentTime = currentTime, duration = self.duration)
+        return True
 class monoceros(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "一角鲸",id=21,
@@ -1122,7 +1125,7 @@ class monoceros(chessInterface):
                          attack_range = 1.5,
                          armor = 22,
                          health= 680,
-                         skill = None)
+                         skill = strikeThrough())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1131,6 +1134,10 @@ class monoceros(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+
+    def cast(self, currentTime, implemented: bool = True):
+        if self.skill.cast(currentTime,self): # 如果施法成功
+            super().cast(implemented)
 
 ############################################################################################################
 class retracted_taunt(skillInterface):
@@ -1576,6 +1583,8 @@ class minionDevil(chessInterface):
                          health = 200, 
                          skill = None,
                          moving_speed = 0.3)
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
@@ -1595,6 +1604,8 @@ class guardDevil(chessInterface):
                          armor = 18, 
                          health = 500, 
                          skill = None)
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
@@ -1614,6 +1625,8 @@ class trollDevilMelee(chessInterface):
                          armor = 30, 
                          health = 1200, 
                          skill = None)
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
@@ -1633,6 +1646,8 @@ class trollDevilRanged(chessInterface):
                          armor = 20, 
                          health = 600, 
                          skill = None)
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
@@ -1675,6 +1690,8 @@ class trollDevilSupplier(chessInterface):
                          armor = 15, 
                          health = 400, 
                          skill = devil_food())
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
@@ -1715,6 +1732,8 @@ class devilDragon(chessInterface):
                          armor = 80, 
                          health = 3500, 
                          skill = splashDamage())
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
         self.initialPosition = position
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
