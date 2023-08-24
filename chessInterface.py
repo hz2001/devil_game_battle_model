@@ -117,7 +117,7 @@ class chessInterface:
         self.totalDamage = 0
         self.cd_counter = 0
         self.attack_counter = 0
-        print(self,f"被重置了，位置为{self.position},血量为{self.health}/{self.maxHP}")
+        # print(self,f"被重置了，位置为{self.position},血量为{self.health}/{self.maxHP}")
 
     def resetStatus(self):
         for statusName in self.statusDict.keys():

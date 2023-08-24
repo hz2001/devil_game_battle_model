@@ -146,18 +146,22 @@ class game:
             losePlayerID = homePlayerID
             if guestPlayerID == 666:
                 damage = 100
-            self.deal_damage_to(playerID = wonPlayerID, receiverID= losePlayerID, damage = damage) 
+            return self.deal_damage_to(playerID = wonPlayerID, receiverID= losePlayerID, damage = damage) 
         elif wonTeam == 'blue':
             # 主场胜利，不掉血，啥也不干
             wonPlayerID = homePlayerID
             losePlayerID = guestPlayerID        
+            return False
 
     def deal_damage_to(self, playerID, receiverID,damage,coefficient = 1):
         print(f"玩家{receiverID}受到 {damage*coefficient} 点伤害")
         self.players[receiverID].hp -= damage * coefficient
         if self.players[receiverID].check_death():
             self.players.pop(receiverID)
+            self.alivePlayers.remove(receiverID)
             print(f'玩家{receiverID}已被淘汰！',"依然存活的玩家有：",self.players)
+            return True
+        return False
 
     def devil_game(self):
         """魔鬼游戏主体"""
@@ -176,7 +180,7 @@ class game:
         # 回合阶段
         while len(self.alivePlayers) >= 2 and self.turn < 10:
             self.turn += 1
-            input(f"当前回合：{self.turn}")
+            input(f"当前回合：{self.turn}, 按下任意键继续 \n")
             # 准备阶段
             for playerID,player in self.players.items():
                 self.chessLists[playerID] = player.new_turn(turn = self.turn)
@@ -186,7 +190,7 @@ class game:
                     for playerID in self.alivePlayers:
                         print()
                         print("_____________________________战斗分割线________________________________")
-                        input(f"当前战斗:{self.players[playerID]},客场:《魔鬼》按下任意键开始战斗")
+                        input(f"当前战斗:{self.players[playerID]},客场:《魔鬼》按下任意键开始战斗\n")
                         self.battleOf2(playerID,666)
                 case 4 | 6 | 8 | 10:
                     # 选人
@@ -199,14 +203,14 @@ class game:
                             opponentID = 666
                         print()
                         print("_____________________________战斗分割线________________________________")
-                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗")
+                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗\n")
                         self.battleOf2(playerID,opponentID)
                 case _: # 玩家对战
                     for playerID in self.alivePlayers:
                         opponentID = self.findOpponent(playerID=playerID)
                         print()
                         print("_____________________________战斗分割线________________________________")
-                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗")
+                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗\n")
                         self.battleOf2(playerID,opponentID)
             self.chessLists: dict[int, Player] = {} # 重置
         print(self.alivePlayers,"胜出")
