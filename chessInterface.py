@@ -167,7 +167,12 @@ class chessInterface:
         if self.skill is None:
             return False
         if hasattr(self.skill,'castRange'):
-            return sorted(self.opponent_distances())[0] <= self.skill.castRange
+            try:
+                if sorted(self.opponent_distances())[0] <= self.skill.castRange:
+                    return True
+            except: 
+                return False
+             
         else: 
             return True
 

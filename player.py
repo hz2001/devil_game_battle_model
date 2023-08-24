@@ -43,8 +43,7 @@ class Player:
             f"现在拥有的棋子为{self.chesses}\n" + \
             f"备战区棋子：{self.chessInHand}，上场棋子{[(c, c.position) for c in self.chessOnField]}；\n"+ \
             f"当前回合还有可用金钱{colored(self.goldAvail, 'yellow')}；\n" + \
-            f"玩家buff有{self.buffs}；\n" + \
-            "\n")
+            f"玩家buff有{self.buffs}；\n")
 
     def next_turn(self):
         '''每回合开始阶段调用这个方法'''
@@ -56,7 +55,7 @@ class Player:
         
     # 血量部分
     def check_death(self):
-        if self.hp < 0:
+        if self.hp <= 0:
             return True
         else:
             return False 
@@ -233,83 +232,107 @@ class Player:
         else:
             print(f"  {self}:{chess}升级{colored('失败','red')}，请检查棋子持有数量")
 
-    def new_turn(self):
-        # 主回合循环
+    def new_turn(self, turn:int):
+        # 玩家回合循环
+        # self.hp -= 10
         row = [3,4,5] # 玩家只能把棋子放在自己这边的棋盘上
         col = [0,1,2,3,4]
         
-        if self.turn != 1:
+        if turn != 1: # if not the first turn
             self.next_turn()
-        self.printStatus()
+        if self.check_death():
+            print(self,"is Dead")
         chessList = self.get_random_chess_to_draw()
         while True:
-            action = int(input(f"玩家{self.id},您要做的事情是：1. 购买棋子 2. 重新抽卡 3. 出售棋子 4. 上阵棋子 5. 下场棋子 6. 升级棋子 7.升级人口 10. 完成操作"))
+            action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 0. 完成操作\n")
+            try:
+                action = int(action)
+            except:
+                print("建议查看有没有可上场棋子和可更新棋子")
+                continue
             match action:
                 case 1:
                     # 购买棋子
                     if self.goldAvail < 1:
-                        print("当前金币为 0  不能进行购买和升级人口操作")
+                        print("当前金币为 0  不能进行购买和升级人口操作.")
                         continue
                     elif len(self.chessInHand) >= 5:
-                        print("棋子数量超过手牌上线，不能进行购买")
+                        print("棋子数量超过手牌上线，不能进行购买.")
                         continue
-                    chessIndex = -1
-                    while chessIndex not in [0,1,2] or chessList[chessIndex] is None:
-                        chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(chessList[index]) for index in range(len(chessList))]},您的选择是：(0/1/2)")
-                        chessIndex = int(chessIndex)-1
-                        if chessIndex not in [0,1,2]:
-                            print("格式不正确，请问您想要【购买】第几个棋子？")
+                    try:
+                        chessIndex = -1
+                        while chessIndex not in [0,1,2] or chessList[chessIndex] is None:
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(chessList[index]) for index in range(len(chessList))]},您的选择是：(0/1/2) 按任意其他键返回。")
+                            chessIndex = int(chessIndex)-1
+                            if chessIndex not in [0,1,2]:
+                                print("格式不正确，请问您想要【购买】第几个棋子？")
+                    except:
+                        print("已返回主菜单。。。")
+                        continue
                     newChess = chessList[chessIndex]() # 初始化棋子
                     self.get_chess(newChess = newChess)
                     chessList[chessIndex] = None
                 case 2:
                     # 重新抽卡
-                    beSure = int(input("抽卡将会花费3金币，您确定要重新抽卡吗？(1=是,0=否)"))
-                    if beSure == 1:
-                        chessList = self.redraw()
+                    if self.goldAvail < 3:
+                        print(f"当前金币为 {self.goldAvail}  不能进行抽卡操作.")
+                        continue
+                    try:
+                        beSure = int(input("抽卡将会花费3金币，您确定要重新抽卡吗？(1=是,0=否)\n"))
+                        if beSure == 1:
+                            chessList = self.redraw()
+                    except:
+                        print("已返回主菜单。。。")
                 case 3:
                 # 出售棋子
                     if self.chesses == {}:
                         print("当前没有任何棋子")
                         continue
-                    chessIndex = -1
-                    chessIDs = []
-                    for i in self.chesses.keys():
-                        chessIDs.append(i)
-                    while chessIndex not in range(len(chessIDs)):
-                        chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...)")
-                        chessIndex = int(chessIndex) -1
-                        if chessIndex not in range(len(chessIDs)):
-                            print("格式不正确，请问您想要【出售】第几个棋子？")
-                    self.sell_chess(chessID = chessIDs[chessIndex])
+                    try:
+                        chessIndex = -1
+                        chessIDs = []
+                        for i in self.chesses.keys(): 
+                            chessIDs.append(i)
+                        while chessIndex not in range(len(chessIDs)):
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = int(chessIndex) -1
+                            if chessIndex not in range(len(chessIDs)):
+                                print("格式不正确，请问您想要【出售】第几个棋子？请输入数字")
+                    except:
+                        print("已返回主菜单。。。")
+                        continue
+                    self.sell_chess(chessID = chessIDs[chessIndex])     
                 case 4:
                     # 上场棋子
                     if self.chessInHand == []:
                         print("场下没有棋子。")
                         continue
-                    chessIndex = -1
-                    while chessIndex not in range(len(self.chessInHand)):
-                        chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...)")
-                        chessIndex = int(chessIndex)-1
-                        if chessIndex not in range(len(self.chessInHand)):
-                            print("格式不正确，请问您想要【上场】第几个棋子？")
+                    
+                    try:
+                        chessIndex = -1
+                        while chessIndex not in range(len(self.chessInHand)):
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = int(chessIndex)-1
+                            if chessIndex not in range(len(self.chessInHand)):
+                                print("格式不正确，请问您想要【上场】第几个棋子？")
                         
-                    unavailPos = [chess.position for chess in self.chessOnField]
-                    position = [-1,-1]
-                    while position[0] not in row or position[1] not in col or position in unavailPos:
-                        r = input(f"请输入棋子在第几排：选项有{row}")
-                        r = int(r)
-                        # while r not in row:
-                        #   r = input(f"棋子行不正确，请输入棋子在第几排：选项有{row}")
-                        c = input(f"请输入棋子在第几列：选项有{col}")
-                        c = int(c)
-                        # while c not in col:
-                        #   c = input(f"棋子行不正确，请输入棋子在第几列：选项有{col}")
-                        position = [r,c]
-                        if position in unavailPos:
-                            print(f"{[r,c]}被占据，请重新输入位置")
-                        elif position[0] not in row or position[1] not in col:
-                            print(f"{[r,c]}不在棋盘里，请重新输入位置")
+                        unavailPos = [chess.position for chess in self.chessOnField]
+                        position = [-1,-1]
+
+                        while position[0] not in row or position[1] not in col or position in unavailPos:
+                            r = input(f"请输入棋子在第几排：选项有{row}；按任意其他键返回。\n")
+                            c = input(f"请输入棋子在第几列：选项有{col}；按任意其他键返回。\n")
+                            r = int(r)
+                            c = int(c)
+                            position = [r,c]
+                            if position in unavailPos:
+                                print(f"{[r,c]}被占据，请重新输入位置")
+                            elif position[0] not in row or position[1] not in col:
+                                print(f"{[r,c]}不在棋盘里，请重新输入位置")
+                    except:
+                        print('已返回至主菜单。。。')
+                        continue
+
                     chess = self.chessInHand[chessIndex]
                     chessID = chess.uniqueID
                     self.hand_to_field(chessID = chessID,position=position)
@@ -319,12 +342,15 @@ class Player:
                         print("场上没有棋子。")
                         continue
                     chessIndex = -1
-                    while chessIndex not in range(len(self.chessOnField)):
-                        chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...)")
-                        chessIndex = int(chessIndex) - 1
-                        if chessIndex not in range(len(self.chessOnField)):
-                            print("格式不正确，请问您想要【下场】第几个棋子？")
-                    self.field_to_hand(chessID = chessIndex)
+                    try:
+                        while chessIndex not in range(len(self.chessOnField)):
+                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = int(chessIndex)-1
+                            if chessIndex not in range(len(self.chessOnField)):
+                                print("格式不正确，请问您想要【下场】第几个棋子？")
+                            self.field_to_hand(chessID = chessIndex)
+                    except:
+                        print('已返回至主菜单。。。')
                 case 6:
                     # 升级棋子
                     canBeUpgraded = []
@@ -334,19 +360,68 @@ class Player:
                     if canBeUpgraded == []:
                         print('当前没有可升级的棋子,请选择其他操作')
                         continue
-                    chessID = int(input(f"可升级棋子为{canBeUpgraded}"))
-                    while chessID not in [t[0] for t in canBeUpgraded]:
-                        chessID = int(input(f"格式不正确，可升级棋子为{canBeUpgraded}，请重新选择："))
-                    self.upgrade_chess(chessID = chessID)
+                    try:
+                        chessID = int(input(f"可升级棋子为{canBeUpgraded},按任意其他键返回\n"))
+                        while chessID not in [t[0] for t in canBeUpgraded]:
+                            chessID = int(input(f"格式不正确，可升级棋子为{canBeUpgraded},按任意其他键返回。请重新选择：\n"))
+                        self.upgrade_chess(chessID = chessID)
+                    except:
+                        print('已返回至主菜单。。。')
+                    
                 case 7:
                     # 升级人口
-                    beSure = int(input("确定升级人口吗？这个操作不能撤回。(1=是/0=否)"))
-                    if beSure == 1:
-                        self.upgrade_pop()
-                case 10:
+                    if self.goldAvail < 3:
+                        print(f"当前金币为 {self.goldAvail}  不能进行升级人口操作.")
+                        continue
+                    try:
+                        beSure = int(input("确定升级人口吗？这个操作不能撤回。(1=是/0=否) 按任意其他键返回。\n"))
+                        if beSure == 1:
+                            self.upgrade_pop()
+                    except:
+                        print('已返回至主菜单。。。')
+                case 8:
+                    # 变更棋子位置
+                    if self.chessOnField == []:
+                        print("棋盘中没有棋子,不能更改棋子位置。已返回主菜单")
+                        continue
+                    chessIndex = -1
+                    try:
+                        while chessIndex not in range(len(self.chessOnField)):
+                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = int(chessIndex)-1
+                            if chessIndex not in range(len(self.chessOnField)):
+                                print("格式不正确，请问您想要【移动】第几个棋子？")
+                    except:
+                        print("已返回主菜单。。。")
+                        continue
+                        
+                    unavailPos = [chess.position for chess in self.chessOnField]
+                    position = [-1,-1]
+                    try:
+                        while position[0] not in row or position[1] not in col or position in unavailPos:
+                            r = input(f"请输入棋子在第几排：选项有{row} 按任意其他键取消操作。\n")
+                            c = input(f"请输入棋子在第几列：选项有{col} 按任意其他键取消操作。\n")
+                            r = int(r)
+                            c = int(c)
+                            position = [r,c]
+                            if position in unavailPos:
+                                print(f"{[r,c]}被占据，请重新输入位置，不可选位置：{unavailPos}")
+                            elif position[0] not in row or position[1] not in col:
+                                print(f"{[r,c]}不在棋盘里，请重新输入位置")
+                    except:
+                        print("已返回主菜单。。。")
+                        continue
+
+                    chess = self.chessOnField[chessIndex]
+                    chess.setInitialPosition(position)
+                case 9:
+                    self.printStatus()
+                    print()
+                case 0:
                     # 完成操作
                     print("此回合操作完成，等待其他玩家...")
                     break
-        self.printStatus()
+                case _:
+                    print("建议查看有没有可上场棋子和可更新棋子")
         return deepcopy(self.chessOnField)
             

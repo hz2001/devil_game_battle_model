@@ -19,6 +19,7 @@ class devil(Player):
         match turn:
             case 1:
                 self.chessOnField = [minionDevil(position = [4,2])]
+                print("getchess from devil, id = ",self.chessOnField[0].uniqueID)
             case 2:
                 self.chessOnField = [minionDevil(position = [4,1]),
                                      minionDevil(position = [4,3])]
@@ -85,7 +86,7 @@ class game:
         
     def add_player(self):
         self.players[self.playerID] = Player(id = self.playerID)
-        self.players[self.playerID].printStatus()
+        print(self.players[self.playerID], "加入成功。")
         self.alivePlayers.append(self.playerID)
         self.playerID += 1
         
@@ -110,7 +111,7 @@ class game:
         row = 5-position[0]
         col = 4-position[1]
         newChess = deepcopy(chess)
-        newChess.position = [row, col]
+        newChess.setInitialPosition(position=[row, col])
         return newChess
     
     def flipAllChess(self, chessList) -> list[chessInterface]:
@@ -125,29 +126,38 @@ class game:
             redTeam = self.chessLists[guestPlayerID]
         else:
             redTeam = self.devilChessListOnTurn[self.turn]
+
+        # print(f"主场:{homePlayerID}")
+        # print(f"客场:{guestPlayerID}")
         redTeam = self.flipAllChess(redTeam)
         blueTeam = self.chessLists[homePlayerID]
+        # print(blueTeam)
+        # print(redTeam)
         newBattle = battle()
         newBattle.addRedTeam(redTeam= redTeam)
         newBattle.addBlueTeam(blueTeam= blueTeam)
+        newBattle.board_print()
+        # print(newBattle.blueTeamDict)
+        # print(newBattle.redTeamDict)
+        # print(newBattle.allChessDict)
         wonTeam, damage, current_time = newBattle.battle_with_skills()
         if wonTeam == 'red': # 客场胜利
             wonPlayerID = guestPlayerID
             losePlayerID = homePlayerID
+            if guestPlayerID == 666:
+                damage = 100
+            self.deal_damage_to(playerID = wonPlayerID, receiverID= losePlayerID, damage = damage) 
         elif wonTeam == 'blue':
+            # 主场胜利，不掉血，啥也不干
             wonPlayerID = homePlayerID
             losePlayerID = guestPlayerID        
-        if guestPlayerID == 666:
-            damage = 100
-        self.deal_damage_to(playerID = wonPlayerID, receiverID= losePlayerID, damage = damage) 
-    
 
     def deal_damage_to(self, playerID, receiverID,damage,coefficient = 1):
         print(f"玩家{receiverID}受到 {damage*coefficient} 点伤害")
         self.players[receiverID].hp -= damage * coefficient
         if self.players[receiverID].check_death():
             self.players.pop(receiverID)
-            print(f'玩家{receiverID}已被淘汰！')
+            print(f'玩家{receiverID}已被淘汰！',"依然存活的玩家有：",self.players)
 
     def devil_game(self):
         """魔鬼游戏主体"""
@@ -155,23 +165,28 @@ class game:
         playerNumber = 0
         while playerNumber < 2 or playerNumber > 4:
             playerNumber = int(input("加入几位玩家？(2-4)"))
+            if playerNumber < 2 or playerNumber > 4:
+                input("格式不正确，请重新输入...")
+                continue
             for i in range(playerNumber):
                 self.add_player()
-            print("所有人都已就位")
-            if playerNumber < 2 or playerNumber > 4:
-                input("格式不正确，输入任何值继续...")
             
+        print("所有人都已就位")
         print("战斗开始")
         # 回合阶段
-        while len(self.alivePlayers) > 2 or self.turn < 10:
+        while len(self.alivePlayers) >= 2 and self.turn < 10:
             self.turn += 1
+            input(f"当前回合：{self.turn}")
             # 准备阶段
-            for playerID in range(self.playerID):
-                self.chessLists[playerID] = self.players[playerID].new_turn()
+            for playerID,player in self.players.items():
+                self.chessLists[playerID] = player.new_turn(turn = self.turn)
             # 锁定回合，战斗阶段
             match self.turn:
                 case 1 | 2 | 3:
                     for playerID in self.alivePlayers:
+                        print()
+                        print("_____________________________战斗分割线________________________________")
+                        input(f"当前战斗:{self.players[playerID]},客场:《魔鬼》按下任意键开始战斗")
                         self.battleOf2(playerID,666)
                 case 4 | 6 | 8 | 10:
                     # 选人
@@ -182,9 +197,24 @@ class game:
                             opponentID = self.findOpponent(playerID=playerID)
                         else:
                             opponentID = 666
+                        print()
+                        print("_____________________________战斗分割线________________________________")
+                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗")
                         self.battleOf2(playerID,opponentID)
                 case _: # 玩家对战
                     for playerID in self.alivePlayers:
-                        self.battleOf2(playerID,self.findOpponent(playerID=playerID))
-            self.chessLists: dict[int, Player] = [] # 重置
+                        opponentID = self.findOpponent(playerID=playerID)
+                        print()
+                        print("_____________________________战斗分割线________________________________")
+                        input(f"当前战斗:{self.players[playerID]},客场:玩家{opponentID}按下任意键开始战斗")
+                        self.battleOf2(playerID,opponentID)
+            self.chessLists: dict[int, Player] = {} # 重置
         print(self.alivePlayers,"胜出")
+        
+        
+def main():
+    newGame = game()
+    newGame.devil_game()
+
+if __name__ == '__main__':
+    main()
