@@ -1087,7 +1087,31 @@ class crab(chessInterface):
 
 ############################################################################################################
 # def 
-
+class strikeThrough(skillInterface):
+    def __init__(self, 
+                 skillName: str = "穿甲茅",
+                 cd: float = 5.5, 
+                 type: str = "active", 
+                 description: str = "一角鲸冲锋并且穿刺目标英雄，造成150伤害并且 两秒内 降低目标护甲", 
+                 castRange: float = 100,
+                 duration: float = 2,
+                 armorChange = - 10) -> None:
+        super().__init__(skillName, cd, type, description, castRange)
+        self.duration = duration 
+        self.armorChange = armorChange
+        
+    def cast(self, currentTime:int, caster: chessInterface, target: chessInterface = None):
+        target:chessInterface = caster.get_hate_mechanism()
+        super().cast(currentTime, caster, target)
+        target.statusDict['frail']
+        if target.statusDict["frail"] is None:
+            # 没被毒过
+            target.statusDict["frail"] = frail(armorChange = self.armorChange, 
+                                               currentTime=currentTime,
+                                                statusOwner=target,
+                                                caster = caster)
+        else:
+            target.statusDict["frail"].addBuff(currentTime = currentTime, duration = self.duration)
 class monoceros(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "一角鲸",id=21,
@@ -1647,7 +1671,7 @@ class trollDevilSupplier(chessInterface):
                          race = 'devil',
                          attack = 40, 
                          attack_interval = 1,
-                         attack_range = 1.5, 
+                         attack_range = 3, 
                          armor = 15, 
                          health = 400, 
                          skill = devil_food())

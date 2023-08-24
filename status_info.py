@@ -333,26 +333,46 @@ class frail(statusInterface):
     def __init__(self, 
                  currentTime: int,
                  statusDuration: float,
-                 armorReduction: int,
+                 armorChange: float,
                  statusOwner: chessInterface) -> None:
-        super().__init__(statusName = "护甲降低",
+        super().__init__(statusName = "护甲变化",
                          currentTime = currentTime,
                          statusDuration=statusDuration,
                          statusType = "debuff")
         self.statusOwner = statusOwner  
-        self.armorReduction = armorReduction
-        print(f"    {statusOwner} 护甲降低{armorReduction}, 原护甲{self.statusOwner.armor}, 现护甲{statusOwner.armor-armorReduction}")
-        self.statusOwner.armor -= armorReduction
+        self.baseArmor = deepcopy(self.statusOwner.armor)
+        self.armorChange = armorChange
+
+        # 更新护甲
+        statusEnd = currentTime + statusDuration
+        self.buffQueue = [(statusEnd,armorChange)]
+        self.setArmor()
+    
+    def addBuff(self, currentTime: int, duration: float, armorChange:float):
+        # 新增一个buff/debuff
+        newEndTime = int(duration * 100) + currentTime
+        self.buffQueue.append((newEndTime, armorChange))
+        self.setArmor() # 更新攻击间隔
+    
+    def setArmor(self):
+        """根据当前queue计算棋子当前攻击间隔"""
+        chessArmor = self.baseArmor
+        for (endTime, armorChange) in self.buffQueue:
+            chessArmor += armorChange
+        print(f"    {self.statusOwner} 护甲改变至{chessArmor}, 原护甲{self.statusOwner.armor}, 现护甲{chessArmor/100}")
+        self.statusOwner.armor = chessArmor
 
     def activate(self, currentTime: float) -> bool:
-        if currentTime > self.statusEnd:
-            self.statusOwner.armor += self.armorReduction
+        if self.buffQueue == []:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, 护甲恢复{self.statusOwner.armor}")
+            self.statusOwner.attack_interval = self.baseArmor
             self.statusOwner.statusDict['frail'] = None
-            return False
         else:
-            # print(self.statusEnd)
-            return True
+            if currentTime > self.buffQueue[0][0]:
+                # 如果buff 结束时间大于第一个时间，就pop 并且重新计算interval
+                self.buffQueue.pop()
+                self.setArmor()
+
 
 class bleeding(statusInterface):
     def __init__(self, 

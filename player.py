@@ -23,10 +23,17 @@ class Player:
         return a.id == b.id
 
     def __repr__(self) -> str:
+        color = 'red'
         if self.id == 0:
             color = 'red'
         elif self.id == 1: 
             color = 'blue'
+        elif self.id == 2:
+            color = 'green'
+        elif self.id == 3:
+            color = 'cyan'
+        elif self.id == 666:
+            color = 'black'
         return f"{colored('玩家'+str(self.id),color)}"
     
     def printStatus(self) -> None:
