@@ -162,7 +162,6 @@ class chessInterface:
         if self.statusDict['stunned'] is None and \
             self.statusDict['hexed'] is None and \
             self.statusDict['silenced'] is None and \
-            self.statusDict['taunted'] is None and \
             self.statusDict['moving'] is None:
             return self.attack_counter >= self.attack_interval
     

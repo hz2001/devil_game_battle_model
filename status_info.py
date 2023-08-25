@@ -342,6 +342,7 @@ class frail(statusInterface):
         self.statusOwner = statusOwner  
         self.baseArmor = deepcopy(self.statusOwner.armor)
         self.armorChange = armorChange
+        statusDuration = int (100* statusDuration)
 
         # 更新护甲
         statusEnd = currentTime + statusDuration
@@ -359,13 +360,13 @@ class frail(statusInterface):
         chessArmor = self.baseArmor
         for (endTime, armorChange) in self.buffQueue:
             chessArmor += armorChange
-        print(f"    {self.statusOwner} 护甲改变至{chessArmor}, 原护甲{self.statusOwner.armor}, 现护甲{chessArmor/100}")
+        print(f"    {self.statusOwner} 护甲改变至{chessArmor}, 原护甲{self.statusOwner.armor}, 现护甲{chessArmor}")
         self.statusOwner.armor = chessArmor
 
     def activate(self, currentTime: float) -> bool:
         if self.buffQueue == []:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束, 护甲恢复{self.statusOwner.armor}")
-            self.statusOwner.attack_interval = self.baseArmor
+            self.statusOwner.armor = self.baseArmor
             self.statusOwner.statusDict['frail'] = None
         else:
             if currentTime > self.buffQueue[0][0]:

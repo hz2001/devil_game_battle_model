@@ -150,6 +150,19 @@ def chess_level(pop, turn) -> list[int]:
             elif turn == 8:
                 chessLevels.append(4)
                 continue
+            elif turn == 9:
+                chessLevels.append(4)
+                continue
+            elif turn == 10:
+                chessLevels.append(4)
+                continue
+        elif i == 1:
+            if turn == 9:
+                chessLevels.append(4)
+                continue
+            elif turn == 10:
+                chessLevels.append(4)
+                continue
         # 根据概率随机相应棋子
         if rand <= possibilities[0]:
             chessLevels.append(1)
