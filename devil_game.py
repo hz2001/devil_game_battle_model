@@ -19,7 +19,7 @@ class devil(Player):
         match turn:
             case 1:
                 self.chessOnField = [minionDevil(position = [4,2])]
-                print("getchess from devil, id = ",self.chessOnField[0].uniqueID)
+                print("get chess from devil, id = ",self.chessOnField[0].uniqueID)
             case 2:
                 self.chessOnField = [minionDevil(position = [4,1]),
                                      minionDevil(position = [4,3])]
@@ -92,10 +92,10 @@ class game:
         
     def findOpponent(self, playerID):
         potential = []
-        for target in self.alivePlayers:
-            if target != playerID:
-                potential.append(target)
-        opponentID = randint(0,len(potential))
+        for targetID in self.alivePlayers:
+            if targetID != playerID:
+                potential.append(targetID)
+        opponentID = potential[randint(0,len(potential))]
         return opponentID
 
     def flipChessPosition(self, chess:chessInterface) -> chessInterface:
@@ -144,7 +144,7 @@ class game:
         if wonTeam == 'red': # 客场胜利
             wonPlayerID = guestPlayerID
             losePlayerID = homePlayerID
-            if guestPlayerID == 666:
+            if guestPlayerID == 666 and self.turn>=4:# 只有第四回合之后才会直接死掉
                 damage = 100
             return self.deal_damage_to(playerID = wonPlayerID, receiverID= losePlayerID, damage = damage) 
         elif wonTeam == 'blue':
@@ -194,7 +194,7 @@ class game:
                         self.battleOf2(playerID,666)
                 case 4 | 6 | 8 | 10:
                     # 选人
-                    playerChoiceID = self.alivePlayers[randint[0,len(self.alivePlayers)]]
+                    playerChoiceID = self.alivePlayers[randint(0,len(self.alivePlayers))]
                     print(f"玩家{playerChoiceID}被恶魔选中了，祝你好运")
                     for playerID in self.alivePlayers:
                         if playerID != playerChoiceID:
