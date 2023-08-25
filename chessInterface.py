@@ -147,7 +147,13 @@ class chessInterface:
         '''
         判断在攻击范围内有无敌方单位
         '''
-        return sorted(self.opponent_distances())[0] <= self.attack_range
+        try:
+            if sorted(self.opponent_distances())[0] <= self.attack_range:
+                return True
+        except: 
+            return False
+
+        return False
 
 
     def can_attack(self) -> bool:
