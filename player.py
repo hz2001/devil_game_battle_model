@@ -19,6 +19,7 @@ class Player:
         self.goldToNextPop = 1
         self.cost2Chance = 0 # 抽到2星卡的概率
         self.hp = 100
+        self.cardLock = False
     def __eq__(a, b):
         return a.id == b.id
 
@@ -39,7 +40,7 @@ class Player:
     def printStatus(self) -> None:
         print (f"\n" + \
             f"当前回合 {self.turn}, 剩余血量：{self.hp}\n" + \
-            f"{self} 现在拥有 {colored(self.population,'green')} 人口，距离下次升级还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者{colored(self.turnToNextPop*self.turnToNextPop,'light_cyan')}金钱；\n" + \
+            f"{self} 现在拥有 {colored(self.population,'green')} 人口，距离下次升级还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者{colored(self.goldToNextPop*self.turnToNextPop,'light_cyan')}金钱；\n" + \
             f"现在拥有的棋子为{self.chesses}\n" + \
             f"备战区棋子：{self.chessInHand}，上场棋子{[(c, c.position) for c in self.chessOnField]}；\n"+ \
             f"当前回合还有可用金钱{colored(self.goldAvail, 'yellow')}；\n" + \
@@ -78,8 +79,8 @@ class Player:
         if self.turnToNextPop == 0:
             self.population += 1
             self.turnToNextPop = deepcopy(self.population)
-            self.costForNextPop = deepcopy(self.population)
-            print(f"玩家{self.id} 现在拥有 {colored(self.population,'green')} 人口，升级至下一人口还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者 {colored(self.turnToNextPop*self.turnToNextPop,'light_cyan')} 金钱；\n")
+            self.goldToNextPop = deepcopy(self.population)
+            print(f"玩家{self.id} 现在拥有 {colored(self.population,'green')} 人口，升级至下一人口还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者 {colored(self.goldToNextPop*self.turnToNextPop,'light_cyan')} 金钱；\n")
         
     # 人口部分
     def upgrade_pop(self):
@@ -100,12 +101,12 @@ class Player:
             else:
                 cardList.append( cost1Card[randint(0,len(cost1Card))] )
         print(self,"本次选择有",cardList)
-        return cardList
+        self.cardList = cardList
 
-    def redraw(self) -> list[object]:
+    def redraw(self):
         """重新抽卡"""
         if self.reduce_gold(purpose=f'刷新棋子', howMuch = 3):
-            return self.get_random_chess_to_draw()
+            self.get_random_chess_to_draw()
         
     def checkChessID(self, chessID:int) -> chessInterface:
         """检查玩家所有棋子中有没有 这个unique id代表的棋子
@@ -162,6 +163,7 @@ class Player:
         # 判定人口
         if len(self.chessOnField) >= self.population:
             print(f"人口不足，请先下棋子，选项有{self.chessOnField}")
+            return
         chess = self.checkChessID(chessID=chessID)
         if chess in self.chessOnField:
             print(f"棋子{chess}已经在场上了，请勿重复上场!")
@@ -215,6 +217,21 @@ class Player:
         chess = self.checkChessID(chessID=chessID)
         sameChessList = self.find_all_copies(chessID=chessID)
         if sameChessList is not None:
+            inp: int = -1
+            while inp not in upgrade_dict[chess.id]:
+                try:
+                    inp = int(input(f"         选项有：{[chessName_dict[i] for i in upgrade_dict[chess.id]]}"))
+                except:
+                    print('输入不合法，请重新输入')
+                    continue
+                if inp not in upgrade_dict[chess.id]:
+                    print(f"    {chess}不可以升级为{chess_dict[inp]}\n    请在{upgrade_dict[chess.id]}中选择合理的棋子ID：")
+            
+            inp = input(f"确认升级吗。(1=是，0=否)")
+            if inp != "1":
+                print("已返回主菜单。。。")
+                return 
+
             for c in sameChessList[:2]:
                 if c.onField:
                     self.chessOnField.remove(c)
@@ -222,12 +239,8 @@ class Player:
                     self.chessInHand.remove(c)
                 del self.chesses[c.uniqueID]
                 c.onField = False
-            print(f"  {self}:{chess}升级{colored('成功','green')}，请选择一个 {chess.star + 1} 星棋子")
-        
-            inp: int = int(input(f"         选项有：{[chessName_dict[i] for i in upgrade_dict[chess.id]]}"))
-            while inp not in upgrade_dict[chess.id]:
-                inp = input(f"    {chess}不可以升级为{chess_dict[inp]}\n    请在{upgrade_dict[chess.id]}中选择合理的棋子ID：")
-                inp = int(inp)
+            # print(f"  {self}:{chess}升级{colored('成功','green')}，请选择一个 {chess.star + 1} 星棋子")
+            
             self.get_chess(chess_dict[inp](),purchase=False)
         else:
             print(f"  {self}:{chess}升级{colored('失败','red')}，请检查棋子持有数量")
@@ -242,9 +255,11 @@ class Player:
             self.next_turn()
         if self.check_death():
             print(self,"is Dead")
-        chessList = self.get_random_chess_to_draw()
+        if self.cardLock:
+            self.cardLock = False # 自动取消锁定状态
+            chessList = self.get_random_chess_to_draw()
         while True:
-            action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 0. 完成操作\n")
+            action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 10.锁定当前棋子 0.完成操作\n")
             try:
                 action = int(action)
             except:
@@ -262,7 +277,7 @@ class Player:
                     try:
                         chessIndex = -1
                         while chessIndex not in [0,1,2] or chessList[chessIndex] is None:
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(chessList[index]) for index in range(len(chessList))]},您的选择是：(0/1/2) 按任意其他键返回。")
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(chessList[index]) for index in range(len(chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in [0,1,2]:
                                 print("格式不正确，请问您想要【购买】第几个棋子？")
@@ -283,6 +298,7 @@ class Player:
                             chessList = self.redraw()
                     except:
                         print("已返回主菜单。。。")
+                        continue
                 case 3:
                 # 出售棋子
                     if self.chesses == {}:
@@ -294,7 +310,7 @@ class Player:
                         for i in self.chesses.keys(): 
                             chessIDs.append(i)
                         while chessIndex not in range(len(chessIDs)):
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex) -1
                             if chessIndex not in range(len(chessIDs)):
                                 print("格式不正确，请问您想要【出售】第几个棋子？请输入数字")
@@ -307,11 +323,13 @@ class Player:
                     if self.chessInHand == []:
                         print("场下没有棋子。")
                         continue
-                    
+                    elif len(self.chessOnField) >= self.population:
+                        print(f"人口不足，请先下棋子，选项有{self.chessOnField}")
+                        continue
                     try:
                         chessIndex = -1
                         while chessIndex not in range(len(self.chessInHand)):
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessInHand)):
                                 print("格式不正确，请问您想要【上场】第几个棋子？")
@@ -320,8 +338,8 @@ class Player:
                         position = [-1,-1]
 
                         while position[0] not in row or position[1] not in col or position in unavailPos:
-                            r = input(f"请输入棋子在第几排：选项有{row}；按任意其他键返回。\n")
-                            c = input(f"请输入棋子在第几列：选项有{col}；按任意其他键返回。\n")
+                            r = input(f"请输入棋子在第几排：选项有{row}；按任意键加回车返回菜单。\n")
+                            c = input(f"请输入棋子在第几列：选项有{col}；按任意键加回车返回菜单。\n")
                             r = int(r)
                             c = int(c)
                             position = [r,c]
@@ -336,21 +354,23 @@ class Player:
                     chess = self.chessInHand[chessIndex]
                     chessID = chess.uniqueID
                     self.hand_to_field(chessID = chessID,position=position)
+                    print(f"变更棋子位置成功，当前人口：{len(self.chessOnField)/self.population};\n现在的场上棋子位置为：\n{[(c, c.position) for c in self.chessOnField]}")
                 case 5:
                     # 下场棋子
                     if self.chessOnField == []:
                         print("场上没有棋子。")
                         continue
-                    chessIndex = -1
                     try:
+                        chessIndex = -1
                         while chessIndex not in range(len(self.chessOnField)):
-                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessOnField)):
                                 print("格式不正确，请问您想要【下场】第几个棋子？")
-                            self.field_to_hand(chessID = chessIndex)
                     except:
                         print('已返回至主菜单。。。')
+                        continue
+                    self.field_to_hand(chessID = self.chessOnField[chessIndex].uniqueID)
                 case 6:
                     # 升级棋子
                     canBeUpgraded = []
@@ -361,20 +381,20 @@ class Player:
                         print('当前没有可升级的棋子,请选择其他操作')
                         continue
                     try:
-                        chessID = int(input(f"可升级棋子为{canBeUpgraded},按任意其他键返回\n"))
+                        chessID = int(input(f"可升级棋子为{canBeUpgraded},按任意键加回车返回菜单\n"))
                         while chessID not in [t[0] for t in canBeUpgraded]:
-                            chessID = int(input(f"格式不正确，可升级棋子为{canBeUpgraded},按任意其他键返回。请重新选择：\n"))
-                        self.upgrade_chess(chessID = chessID)
+                            chessID = int(input(f"格式不正确，可升级棋子为{canBeUpgraded},按任意键加回车返回菜单。请重新选择：\n"))
                     except:
                         print('已返回至主菜单。。。')
-                    
+                        continue
+                    self.upgrade_chess(chessID = chessID)
                 case 7:
                     # 升级人口
                     if self.goldAvail < 3:
                         print(f"当前金币为 {self.goldAvail}  不能进行升级人口操作.")
                         continue
                     try:
-                        beSure = int(input("确定升级人口吗？这个操作不能撤回。(1=是/0=否) 按任意其他键返回。\n"))
+                        beSure = int(input("确定升级人口吗？这个操作不能撤回。(1=是/0=否) 按任意键加回车返回菜单。\n"))
                         if beSure == 1:
                             self.upgrade_pop()
                     except:
@@ -387,7 +407,7 @@ class Player:
                     chessIndex = -1
                     try:
                         while chessIndex not in range(len(self.chessOnField)):
-                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意其他键返回。\n")
+                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessOnField)):
                                 print("格式不正确，请问您想要【移动】第几个棋子？")
@@ -414,13 +434,25 @@ class Player:
 
                     chess = self.chessOnField[chessIndex]
                     chess.setInitialPosition(position)
+                    print(f"变更棋子位置成功，当前人口：{len(self.chessOnField)/self.population};\n现在的场上棋子位置为：\n{[(c, c.position) for c in self.chessOnField]}")
                 case 9:
                     self.printStatus()
                     print()
+                case 10:
+                    if self.cardLock:
+                        print("当前卡牌锁定状态为 【开启】")
+                        self.cardLock = False
+                    else:
+                        print("当前卡牌锁定状态为 【关闭】")
+                        self.cardLock = True
                 case 0:
                     # 完成操作
-                    print("此回合操作完成，等待其他玩家...")
-                    break
+                    inp = input("确定完成该回合吗，此操作不能取消。1=是 其他键=否")
+                    if inp == "1":
+                        print("此回合操作完成，等待其他玩家...")
+                        break
+                    else:
+                        continue
                 case _:
                     print("建议查看有没有可上场棋子和可更新棋子")
         return deepcopy(self.chessOnField)
