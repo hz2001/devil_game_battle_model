@@ -167,13 +167,13 @@ class game:
         """魔鬼游戏主体"""
         print("开始匹配")
         playerNumber = 0
-        while playerNumber < 2 or playerNumber > 4:
-            playerNumber = int(input("加入几位玩家？(2-4)"))
-            if playerNumber < 2 or playerNumber > 4:
-                input("格式不正确，请重新输入...")
+        while playerNumber not in ['2','3','4']:
+            playerNumber = input("加入几位玩家？(2-4)")
+            if playerNumber not in ['2','3','4']:
+                print("格式不正确，请重新输入...")
                 continue
-            for i in range(playerNumber):
-                self.add_player()
+        for i in range(int(playerNumber)):
+            self.add_player()
             
         print("所有人都已就位")
         print("战斗开始")

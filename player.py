@@ -20,6 +20,7 @@ class Player:
         self.cost2Chance = 0 # 抽到2星卡的概率
         self.hp = 100
         self.cardLock = False
+        self.chessList = []
     def __eq__(a, b):
         return a.id == b.id
 
@@ -52,7 +53,6 @@ class Player:
         self.turn += 1
         self.goldAvail = deepcopy(self.turn)
         self.checkPopulationUpdate()      
-        self.printStatus()  
         
     # 血量部分
     def check_death(self):
@@ -92,7 +92,7 @@ class Player:
     def printChesses(self):
         print(self.chesses)
         
-    def get_random_chess_to_draw(self) -> list[object]:
+    def get_random_chess_to_draw(self):
         """每回合随机抽卡"""
         cardList = []
         for i in range(3):
@@ -100,8 +100,8 @@ class Player:
                 cardList.append( cost2Card[randint(0,len(cost2Card))] )
             else:
                 cardList.append( cost1Card[randint(0,len(cost1Card))] )
-        print(self,"本次选择有",cardList)
-        self.cardList = cardList
+        # print(self,"本次选择有",cardList)
+        self.chessList=  cardList
 
     def redraw(self):
         """重新抽卡"""
@@ -227,8 +227,7 @@ class Player:
                 if inp not in upgrade_dict[chess.id]:
                     print(f"    {chess}不可以升级为{chess_dict[inp]}\n    请在{upgrade_dict[chess.id]}中选择合理的棋子ID：")
             
-            inp = input(f"确认升级吗。(1=是，0=否)")
-            if inp != "1":
+            if input(f"确认升级吗。(1=是，0=否)") != "1":
                 print("已返回主菜单。。。")
                 return 
 
@@ -255,9 +254,12 @@ class Player:
             self.next_turn()
         if self.check_death():
             print(self,"is Dead")
+        self.printStatus() # 显示玩家当前信息
         if self.cardLock:
-            self.cardLock = False # 自动取消锁定状态
-            chessList = self.get_random_chess_to_draw()
+            self.cardLock = False# 自动解锁
+        else:
+            self.get_random_chess_to_draw()
+        
         while True:
             action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 10.锁定当前棋子 0.完成操作\n")
             try:
@@ -274,28 +276,36 @@ class Player:
                     elif len(self.chessInHand) >= 5:
                         print("棋子数量超过手牌上线，不能进行购买.")
                         continue
+                    # chessIndex = -1
+                    # while chessIndex not in [0,1,2] or self.chessList[chessIndex] is None:
+                    #     chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessList[index]) for index in range(len(self.chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
+                    #     chessIndex = int(chessIndex)-1
+                    #     if chessIndex not in [0,1,2]:
+                    #         print("格式不正确，请问您想要【购买】第几个棋子？")
                     try:
                         chessIndex = -1
-                        while chessIndex not in [0,1,2] or chessList[chessIndex] is None:
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(chessList[index]) for index in range(len(chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
+                        while chessIndex not in [0,1,2] or self.chessList[chessIndex] is None:
+                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessList[index]) for index in range(len(self.chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in [0,1,2]:
                                 print("格式不正确，请问您想要【购买】第几个棋子？")
                     except:
                         print("已返回主菜单。。。")
                         continue
-                    newChess = chessList[chessIndex]() # 初始化棋子
+                    newChess = self.chessList[chessIndex]() # 初始化棋子
                     self.get_chess(newChess = newChess)
-                    chessList[chessIndex] = None
+                    self.chessList[chessIndex] = None
                 case 2:
                     # 重新抽卡
                     if self.goldAvail < 3:
                         print(f"当前金币为 {self.goldAvail}  不能进行抽卡操作.")
                         continue
+                    elif self.cardLock:
+                        print('当前棋子锁是开启状态，请先关闭棋子锁')
                     try:
                         beSure = int(input("抽卡将会花费3金币，您确定要重新抽卡吗？(1=是,0=否)\n"))
                         if beSure == 1:
-                            chessList = self.redraw()
+                            self.redraw()
                     except:
                         print("已返回主菜单。。。")
                         continue
@@ -440,16 +450,16 @@ class Player:
                     print()
                 case 10:
                     if self.cardLock:
-                        print("当前卡牌锁定状态为 【开启】")
+                        print("当前卡牌锁定状态为 【关闭】")
                         self.cardLock = False
                     else:
-                        print("当前卡牌锁定状态为 【关闭】")
+                        print("当前卡牌锁定状态为 【开启】")
                         self.cardLock = True
                 case 0:
                     # 完成操作
                     inp = input("确定完成该回合吗，此操作不能取消。1=是 其他键=否")
                     if inp == "1":
-                        print("此回合操作完成，等待其他玩家...")
+                        print("此回合操作完成，等待其他玩家...\n")
                         break
                     else:
                         continue
