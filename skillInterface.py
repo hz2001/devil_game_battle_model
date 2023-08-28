@@ -7,6 +7,7 @@ class skillInterface:
     def __init__(self,
                  skillName: str = "",
                  cd: float = 0,
+                 initialCD: float = 0,
                  type:str = "passive",
                  description:str = "",
                  castRange: float = 100) -> None:
@@ -16,6 +17,7 @@ class skillInterface:
         '''
         self.skillName = skillName
         self.cd = cd
+        self.initialCD = cd - initialCD
         self.type = type
         self.description = description
         self.castRange = castRange

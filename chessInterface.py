@@ -73,7 +73,10 @@ class chessInterface:
         self.onField = False
 
         self.attack_counter:int = 0 # take track of when this chess can attack
-        self.cd_counter:int = 0 # take track of when this chess can cast spell
+        if self.skill is not None:
+            self.cd_counter:int = int(self.skill.initialCD*100)
+        else:
+            self.cd_counter:int = 0 # take track of when this chess can cast spell
         
         # for test purposes
         self.totalDamageReceived: float = 0
@@ -259,6 +262,9 @@ class chessInterface:
             currentTime (int): _description_
             coefficient (float, optional): _description_. Defaults to 1.0.
         """
+        if random() < opponent.evasion:
+            print(currentTime/100, f" <{self}> 攻击了<{opponent}>,但是被闪避了。")
+            return 0
         damage = self.calculate_attack_damage(attack = self.attack*coefficient, opponent=opponent)
         self.print_attack_info(opponent,currentTime,damage)
         self.deal_damage_to(opponent=opponent,
