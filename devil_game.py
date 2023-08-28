@@ -40,9 +40,9 @@ class devil(Player):
                 positions = [[3,0],[3,2],[3,4], # 小前排，大前排，小前排
                              [4,1],[4,3], # 输出，输出
                              [5,2]] # 辅助
-                self.chessOnField = [guardDevil(position = positions[0]),trollDevilMelee(position = positions[0]),guardDevil(position = positions[2]),
-                                     trollDevilRanged(position = positions[0]),trollDevilRanged(position = positions[0]),
-                                     trollDevilSupplier(position = positions[0])]
+                self.chessOnField = [guardDevil(position = positions[0]),trollDevilMelee(position = positions[1]),guardDevil(position = positions[2]),
+                                     trollDevilRanged(position = positions[3]),trollDevilRanged(position = positions[4]),
+                                     trollDevilSupplier(position = positions[5])]
             case 8:
                 self.chessOnField = [devilDragon(position = [4,2])] 
             case 10:

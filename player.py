@@ -79,7 +79,7 @@ class Player:
         if self.turnToNextPop == 0:
             self.population += 1
             self.turnToNextPop = deepcopy(self.population)
-            self.goldToNextPop = deepcopy(self.population)
+            self.goldToNextPop = deepcopy(self.population) ** 2 # population 的平方
             print(f"玩家{self.id} 现在拥有 {colored(self.population,'green')} 人口，升级至下一人口还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者 {colored(self.goldToNextPop*self.turnToNextPop,'light_cyan')} 金钱；\n")
         
     # 人口部分
@@ -285,7 +285,7 @@ class Player:
                     try:
                         chessIndex = -1
                         while chessIndex not in [0,1,2] or self.chessList[chessIndex] is None:
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessList[index]) for index in range(len(self.chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
+                            chessIndex = input(f"现有选项 {[(index+1,str(self.chessList[index])) for index in range(len(self.chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in [0,1,2]:
                                 print("格式不正确，请问您想要【购买】第几个棋子？")
@@ -320,7 +320,7 @@ class Player:
                         for i in self.chesses.keys(): 
                             chessIDs.append(i)
                         while chessIndex not in range(len(chessIDs)):
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...) 按任意键加回车返回菜单。\n")
+                            chessIndex = input(f"现有选项 {[(index+1,self.chesses[chessIDs[index]]) for index in range(len(chessIDs))]},请选择：(0/1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex) -1
                             if chessIndex not in range(len(chessIDs)):
                                 print("格式不正确，请问您想要【出售】第几个棋子？请输入数字")
@@ -339,7 +339,7 @@ class Player:
                     try:
                         chessIndex = -1
                         while chessIndex not in range(len(self.chessInHand)):
-                            chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
+                            chessIndex = input(f"现有选项 {[(index+1,self.chessInHand[index]) for index in range(len(self.chessInHand))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessInHand)):
                                 print("格式不正确，请问您想要【上场】第几个棋子？")
@@ -373,7 +373,7 @@ class Player:
                     try:
                         chessIndex = -1
                         while chessIndex not in range(len(self.chessOnField)):
-                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...) 按任意键加回车返回菜单。\n")
+                            chessIndex = input(f"现有选项\n{[(index+1,self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子ID：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessOnField)):
                                 print("格式不正确，请问您想要【下场】第几个棋子？")
@@ -400,8 +400,8 @@ class Player:
                     self.upgrade_chess(chessID = chessID)
                 case 7:
                     # 升级人口
-                    if self.goldAvail < 3:
-                        print(f"当前金币为 {self.goldAvail}  不能进行升级人口操作.")
+                    if self.goldAvail < self.population:
+                        print(f"当前金币为 {self.goldAvail}/{self.population}  不能进行升级人口操作.")
                         continue
                     try:
                         beSure = int(input("确定升级人口吗？这个操作不能撤回。(1=是/0=否) 按任意键加回车返回菜单。\n"))
@@ -417,7 +417,7 @@ class Player:
                     chessIndex = -1
                     try:
                         while chessIndex not in range(len(self.chessOnField)):
-                            chessIndex = input(f"现有选项\n{[str(index+1)+'. '+str(self.chessOnField[index]) for index in range(len(self.chessOnField))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
+                            chessIndex = input(f"现有选项\n{[(index+1,self.chessOnField[index],self.chessOnField[index].position) for index in range(len(self.chessOnField))]},请选择棋子Index：(1/2/3...) 按任意键加回车返回菜单。\n")
                             chessIndex = int(chessIndex)-1
                             if chessIndex not in range(len(self.chessOnField)):
                                 print("格式不正确，请问您想要【移动】第几个棋子？")
