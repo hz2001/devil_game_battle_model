@@ -60,6 +60,10 @@ class hexed(statusInterface):
             # 仍然被羊，跳过 本次攻击/移动判定
             self.statusOwner.attack_counter = 0
             return True
+    def addBuff(self, currentTime: int, duration: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
 
 # 眩晕
 class stunned(statusInterface):
@@ -494,3 +498,29 @@ class swarmStatus(statusInterface):
     def activate(self, currentTime: float) -> bool:
         pass
         
+class evasionStatus(statusInterface):
+    def __init__(self,currentTime: int, statusDuration: float, statusOwner: chessInterface, evasionChance:float) -> None:
+        super().__init__(statusName = "闪避", currentTime=currentTime, 
+                         statusDuration=statusDuration, statusType="buff")
+        self.evasionChance = evasionChance 
+        self.statusOwner = statusOwner
+        self.setEvasion(currentTime)
+    
+    def activate(self, currentTime: float) -> bool:
+        if currentTime > self.statusEnd:
+            self.statusOwner.statusDict['evasionStatus'] = None
+            print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
+            return False
+        else:
+            # print(self.statusEnd)
+            return True
+    def setEvasion(self,currentTime:int):
+        self.statusOwner.evasion = self.evasionChance
+        print(f"{currentTime/100}    {self.statusOwner}的闪避概率变更为{self.statusOwner.evasion*100}%")
+        
+    def addBuff(self, currentTime: int, duration: float, evasionChance:float):
+        if evasionChance > self.evasionChance:
+            self.evasionChance = evasionChance
+            self.setEvasion(currentTime)
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 

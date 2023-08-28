@@ -223,6 +223,26 @@ class fearMove(skillInterface):
             caster.position[1] += 1
             return True
 
+class camouflage(skillInterface):
+    def __init__(self, skillName: str = "伪装", 
+                 description: str = "小丑鱼和环境融为一体，自带30%的闪避概率", 
+                 chance = 0.3, 
+                 effectiveInterval = 0.1) -> None: # effectiveinterval 是0.1 是为了让小丑鱼被破坏之后状态自动结束
+        super().__init__(skillName, 
+                         type= "passive", 
+                         description = description)
+        self.effectiveInterval=effectiveInterval
+        self.evasionChance = chance
+    def cast(self, currentTime: int, caster: chessInterface, target: chessInterface):
+        if 'evasionStatus' not in caster.statusDict.keys() or caster.statusDict['evasionStatus'] is None:
+            caster.statusDict['evasionStatus'] = evasionStatus(currentTime=currentTime,
+                                                               statusDuration=self.effectiveInterval,
+                                                               statusOwner = caster,
+                                                               evasionChance=self.evasionChance)
+        else:
+            caster.statusDict['evasionStatus'].addBuff(currentTime=currentTime,
+                                                       duration = self.effectiveInterval,
+                                                       evasionChance= self.evasionChance)
 class littleUglyFish(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "小丑鱼",
@@ -234,7 +254,7 @@ class littleUglyFish(chessInterface):
                          attack_range = 2,
                          armor=12,
                          health=252,
-                         skill = fearMove())
+                         skill = camouflage())
         self.skill.initialHealth = self.health
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -244,10 +264,11 @@ class littleUglyFish(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
-        
-    def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime, caster = self, currentHealth = self.health)
-        return super().cast(currentTime, implemented = True)
+    def cast(self, currentTime: int = 0):
+        self.skill.cast(currentTime=currentTime, caster = self,target = None)
+    # def cast(self, currentTime: int):
+    #     self.skill.cast(currentTime=currentTime, caster = self, currentHealth = self.health)
+    #     return super().cast(currentTime, implemented = True)
 
 # 2星卡
 # mammal
