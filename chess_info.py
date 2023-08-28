@@ -94,7 +94,7 @@ class threeStinkers(skillInterface):
         # self.duration = 0
         # 不能用target，这样的话会在一个蚂蚁死掉之后其余蚂蚁属性变弱, 所以我们用一个公用的counter
         # 也不能用teamDict， 因为棋子死掉后会从teamDict 去除掉，有可能带了一个其他棋子死掉了，这样的话teamDict 中所有棋子就都是蚂蚁了
-        threeStinkers.ant_count += 1
+        threeStinkers.ant_count += 1 # 需要对战之后刷新棋子
         self.attack = deepcopy(attack)
         self.armor = deepcopy(armor)
         self.health = deepcopy(health)
@@ -124,6 +124,33 @@ class threeStinkers(skillInterface):
             target.health = target.health / target.maxHP * self.maxHP
             target.maxHP = self.maxHP
             print(f"{currentTime/100}   {target}收到了破坏,{target}被打回了原形")
+
+class swarm(skillInterface): 
+    """ 技能：虫群
+        效果：蚂蚁在和其他昆虫一起上真的时候获得全属性加成，每多一个昆虫自身属性增加30%。
+    """
+    
+    insect_count = 0
+    def __init__(self, attack, armor, health, maxHP) -> None: 
+        super().__init__(skillName = "虫群",
+                         cd = 0,
+                         type = "passive",
+                         description= f"人多尼酿大")
+        # self.duration = 0
+        # 不能用target，这样的话会在一个蚂蚁死掉之后其余蚂蚁属性变弱, 所以我们用一个公用的counter
+        # 也不能用teamDict， 因为棋子死掉后会从teamDict 去除掉，有可能带了一个其他棋子死掉了，这样的话teamDict 中所有棋子就都是蚂蚁了
+        swarm.insect_count += 1
+        self.activate = False
+        self.attack = deepcopy(attack)
+        self.armor = deepcopy(armor)
+        self.health = deepcopy(health)
+        self.maxHP = deepcopy(maxHP)
+        
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
+        activate = True
+        if not hasattr(caster.statusDict, 'swarm') or caster.statusDict['swarm'] is None:
+            caster.statusDict['swarm'] = swarmStatus()
+        
 
 class ant(chessInterface):
     def __init__(self,position = [3,3]):
@@ -163,13 +190,18 @@ class ant(chessInterface):
 # 小丑鱼
 class fearMove(skillInterface):
     def __init__(self,
+                 initialHealth:float = 1000,
                  cd:float = 2) -> None:
         super().__init__(skillName = "孩怕",
                          cd = cd,
                          type = "passive",
                          description= f"受到攻击后会害怕，并且向后撤")
+        self.initialHealth = initialHealth
     
-    def cast(self,currentTime: int, caster: chessInterface):
+    def cast(self,currentTime: int, caster: chessInterface,currentHealth: float):
+        if currentHealth >= self.initialHealth:
+            return False # 没受到伤害，释放技能
+        self.initialHealth = deepcopy(currentHealth)
         target = caster.get_hate_mechanism()
         position = target.position
         print(f"{currentTime/100}   {caster}{self}了,向后退了一格")
@@ -177,16 +209,16 @@ class fearMove(skillInterface):
         col = position[1]
         if row > caster.position[0] and caster.position[0] > 0:
             caster.position[0] -= 1
-            return
+            return True
         elif row < caster.position[0] and caster.position[0] < 5:
             caster.position[0] += 1
-            return
+            return True
         if col > caster.position[1] and caster.position[1] > 0:
             caster.position[1] -= 1
-            return
+            return True
         elif col < caster.position[1] and caster.position[1] < 4:
             caster.position[1] += 1
-            return
+            return True
 
 class littleUglyFish(chessInterface):
     def __init__(self,position = [3,3]):
@@ -200,6 +232,7 @@ class littleUglyFish(chessInterface):
                          armor=12,
                          health=252,
                          skill = fearMove())
+        self.skill.initialHealth = self.health
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -276,11 +309,14 @@ class llama(chessInterface):
 class summonWolfMinions(skillInterface):
     def __init__(self,
                  skillName: str = "召唤狼小弟",
-                 cd: float = 5,
+                 cd: float = 10,
+                 initialCD: float = 3,
                  type: str = "active",
-                 description: str = "幻影狼分身") -> None:
+                 description: str = "幻影狼分身",
+                 duration = 7) -> None:
         super().__init__(skillName, cd, type, description)
-        # self.findPosition() TODO implement this
+        self.duration = duration
+        self.initialCD = cd-initialCD
 
     def cast(self, currentTime: int, caster: chessInterface, target=None):
         '''在合适的位置召唤狼兵'''
@@ -305,7 +341,8 @@ class summonWolfMinions(skillInterface):
                                      currentTime=currentTime,
                                      allChessDict=caster.allChessDict,
                                      teamDict = caster.teamDict,
-                                     team = caster.team)
+                                     team = caster.team,
+                                     duration = self.duration)
             caster.teamDict[wolfMinion1.uniqueID] = wolfMinion1
             caster.allChessDict[wolfMinion1.uniqueID] = wolfMinion1
         if secondPlace is not None:
@@ -314,7 +351,8 @@ class summonWolfMinions(skillInterface):
                                      currentTime=currentTime,
                                      allChessDict=caster.allChessDict,
                                      teamDict=caster.teamDict,
-                                     team = caster.team)
+                                     team = caster.team,
+                                     duration = self.duration)
             caster.teamDict[wolfMinion2.uniqueID] = wolfMinion2
             caster.allChessDict[wolfMinion2.uniqueID] = wolfMinion2
 # 狼
@@ -338,6 +376,7 @@ class wolf(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        self.cd_counter += int(skill.initialCD*100) # set initialCD
 
     def cast(self, currentTime: int):
         self.skill.cast(currentTime=currentTime,
@@ -345,7 +384,7 @@ class wolf(chessInterface):
         return super().cast(currentTime=currentTime,implemented=True)
 
 class wolfMinion(wolf):
-    def __init__(self, allChessDict, teamDict, currentTime:int, team:int, position = [3, 3]):
+    def __init__(self, allChessDict, teamDict, currentTime:int, team:int, position = [3, 3], duration=7):
         super().__init__(position, skill =None)
         self.team = team
         self.chessName = "狼分身"
@@ -354,7 +393,7 @@ class wolfMinion(wolf):
         self.armor=int(self.armor*0.7)
         self.health=self.health/3
         self.maxHP = deepcopy(self.health)
-        self.statusDict['summoned'] = summoned(statusDuration=10,
+        self.statusDict['summoned'] = summoned(statusDuration=duration,
                                                currentTime=currentTime,
                                                statusOwner=self)
         self.id= 29
@@ -685,7 +724,7 @@ class antiInsect(skillInterface):
         super().__init__(skillName = "昆虫克制",
                     cd= 0,
                     type= "passive",
-                    description= "犀牛的皮非常的厚，让昆虫的攻击穿透不了,降低80%昆虫对其造成的伤害",
+                    description= "犀牛的皮非常的厚，让昆虫的攻击穿透不了,降低40%昆虫对其造成的伤害",
                     castRange = 100)
         self.reductionRate = reductionRate
 
@@ -697,8 +736,8 @@ class hippo(chessInterface):
                          attack = 58,
                          attack_interval=1.7,
                          attack_range = 1.5,
-                         armor = 63,
-                         health= 1250,
+                         armor = 49,
+                         health= 1150,
                          skill = antiInsect())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -1592,11 +1631,11 @@ class minionDevil(chessInterface):
         super().__init__(chessName = "鬼炮灰", id = 100,
                          star = 1,
                          race = 'devil',
-                         attack = 20, 
+                         attack = 23, 
                          attack_interval = 1.2,
                          attack_range = 1.5, 
-                         armor = 10, 
-                         health = 200, 
+                         armor = 11, 
+                         health = 250, 
                          skill = None,
                          moving_speed = 0.3)
         self.uniqueID = chessInterface.uniqueID + 1
@@ -1614,11 +1653,11 @@ class guardDevil(chessInterface):
         super().__init__(chessName = "鬼护卫", id = 101,
                          star = 2,
                          race = 'devil',
-                         attack = 48, 
+                         attack = 54, 
                          attack_interval = 1.1,
                          attack_range = 1.5, 
-                         armor = 20, 
-                         health = 500, 
+                         armor = 24, 
+                         health = 562, 
                          skill = None)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
@@ -1635,8 +1674,8 @@ class trollDevilMelee(chessInterface):
         super().__init__(chessName = "近战巨魔", id = 102,
                          star = 3,
                          race = 'devil',
-                         attack = 80, 
-                         attack_interval = 0.9,
+                         attack = 91, 
+                         attack_interval = 0.85,
                          attack_range = 1.5, 
                          armor = 30, 
                          health = 1200, 
@@ -1656,7 +1695,7 @@ class trollDevilRanged(chessInterface):
         super().__init__(chessName = "远程巨魔", id = 103,
                          star = 3,
                          race = 'devil',
-                         attack = 70, 
+                         attack = 79, 
                          attack_interval = 0.7,
                          attack_range = 2.5, 
                          armor = 20, 
@@ -1700,7 +1739,7 @@ class trollDevilSupplier(chessInterface):
         super().__init__(chessName = "辅助巨魔", id = 104,
                          star = 3,
                          race = 'devil',
-                         attack = 40, 
+                         attack = 43, 
                          attack_interval = 1,
                          attack_range = 3, 
                          armor = 15, 
