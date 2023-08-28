@@ -82,6 +82,10 @@ class stunned(statusInterface):
             # 仍然被眩晕，跳过 本次攻击/移动判定
             self.statusOwner.attack_counter = 0
             return True
+    def addBuff(self, currentTime: int, duration: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
 
 # 缴械
 class disarmed(statusInterface):
@@ -104,6 +108,11 @@ class disarmed(statusInterface):
             # 仍然被缴械，跳过 本次攻击， 移动判定继续
             self.statusOwner.attack_counter = 0
             return True
+
+    def addBuff(self, currentTime: int, duration: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
 
 # 嘲讽
 class taunted(statusInterface):
@@ -145,6 +154,11 @@ class silenced(statusInterface):
             # 仍然被沉默，跳过 技能判定，攻击判定继续 在can_cast中体现
             return True
 
+    def addBuff(self, currentTime: int, duration: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
+
 # 破坏 （被动无效化）
 class broken(statusInterface):
     def __init__(self, currentTime: int,
@@ -165,6 +179,10 @@ class broken(statusInterface):
         else:
             # 仍然被破坏，如果有被动技能，跳过被动技能判定
             return True
+    def addBuff(self, currentTime: int, duration: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
 
 class attack_interval_change(statusInterface):
     def __init__(self, currentTime: int,
@@ -329,6 +347,14 @@ class vulnerable(statusInterface):
             # print(self.statusEnd)
             return True
 
+    def addBuff(self, currentTime: int, duration: float, amplification: float):
+        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+        if amplification > self.amplification:
+            self.amplification = amplification
+        
+        if currentTime + int(100*duration) > self.statusEnd:
+            self.statusEnd = currentTime + int(100*duration) 
+
 class frail(statusInterface):
     def __init__(self, 
                  currentTime: int,
@@ -404,13 +430,15 @@ class reviving(statusInterface):
     def __init__(self, 
                  currentTime: int, 
                  statusDuration: float, 
-                 statusOwner: chessInterface) -> None:
+                 statusOwner: chessInterface,
+                 armor: int) -> None:
         super().__init__(statusName = "重生中",
                          currentTime = currentTime,
                          statusDuration = statusDuration,
                          statusType = "status")
         self.statusOwner = statusOwner 
         self.timeElapsed = 0
+        self.newArmor = armor
         print(f"    {statusOwner} 复活中")
     def activate(self, currentTime: float) -> bool:
         if self.timeElapsed > self.statusDuration:
@@ -418,7 +446,7 @@ class reviving(statusInterface):
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
             print(f"{currentTime/100}   {self.statusOwner}已经复活, 护甲增加")
             self.statusOwner.health = self.statusOwner.maxHP
-            self.statusOwner.armor = 100
+            self.statusOwner.armor = self.newArmor
             return False
         else:
             # print(self.timeElapsed,self.statusDuration)
@@ -447,7 +475,22 @@ class whisper(statusInterface):
             # print(self.statusEnd)
             return True
 
+class swarmStatus(statusInterface):
+    def __init__(self, 
+                 currentTime: int,
+                 statusDuration: float,
+                 statusOwner: chessInterface) -> None:
+        super().__init__(statusName = '虫群',
+                         currentTime = currentTime,
+                         statusDuration = statusDuration,
+                         statusType = 'buff')
+        self.statusOwner = statusOwner
+        self.insects = 0
+        print(f"    {statusOwner} 虫群状态{self.insects}层")
 
-
-
-
+    def addBuff(self, currentTime: int, duration: float):
+        self.statusEnd += int(duration * 100)
+        
+    def activate(self, currentTime: float) -> bool:
+        pass
+        
