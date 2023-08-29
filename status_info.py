@@ -2,6 +2,7 @@ from termcolor import colored
 from chessInterface import chessInterface
 from statusInterface import statusInterface
 from copy import deepcopy
+from random import randint, random
 # from chess_info import *
 
 statusDictExample= {
@@ -128,6 +129,7 @@ class taunted(statusInterface):
                          statusDuration=statusDuration,
                          statusType = "disable")
         self.statusOwner = statusOwner
+        print(f"{currentTime/100}   {self.statusOwner}被【{self}】了")
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
@@ -419,6 +421,7 @@ class bleeding(statusInterface):
         self.statusOwner = statusOwner  
         self.caster = caster
         self.instanceDamage = instanceDamage
+        print("开始流血")
     def activate(self, currentTime: float) -> bool:
         if currentTime > self.statusEnd:
             self.statusOwner.statusDict['bleeding'] = None
@@ -480,21 +483,24 @@ class whisper(statusInterface):
             return True
 
 class swarmStatus(statusInterface):
-    def __init__(self, 
-                 currentTime: int,
-                 statusDuration: float,
-                 statusOwner: chessInterface) -> None:
+    def __init__(self,
+                 statusOwner: chessInterface,
+                 insectCount = 0,
+                 buffRate = 0.3) -> None:
         super().__init__(statusName = '虫群',
-                         currentTime = currentTime,
-                         statusDuration = statusDuration,
+                         currentTime = 0,
+                         statusDuration = 100,
                          statusType = 'buff')
         self.statusOwner = statusOwner
-        self.insects = 0
-        print(f"    {statusOwner} 虫群状态{self.insects}层")
+        
+        print(f"    {statusOwner} 虫群状态{insectCount}层") 
+        self.statusOwner.attack = deepcopy(self.statusOwner.attack) * (1+ insectCount *buffRate)
+        self.statusOwner.armor = deepcopy(self.statusOwner.armor) * (1+ insectCount *buffRate)
+        self.statusOwner.health = deepcopy(self.statusOwner.health) * (1+ insectCount *buffRate)
+        self.statusOwner.maxHP = deepcopy(self.statusOwner.maxHP) * (1+ insectCount *buffRate)
 
     def addBuff(self, currentTime: int, duration: float):
-        self.statusEnd += int(duration * 100)
-        
+        pass        
     def activate(self, currentTime: float) -> bool:
         pass
         
@@ -524,3 +530,34 @@ class evasionStatus(statusInterface):
             self.setEvasion(currentTime)
         if currentTime + int(100*duration) > self.statusEnd:
             self.statusEnd = currentTime + int(100*duration) 
+
+
+class swallowed(statusInterface):
+    def __init__(self,currentTime: int, statusDuration: float, 
+                 statusOwner: chessInterface, caster: chessInterface, damage: float) -> None:
+        super().__init__(statusName = "被吞", currentTime=currentTime, 
+                         statusDuration=statusDuration, statusType="special")
+        self.statusOwner = statusOwner
+        self.caster = caster 
+        self.damage = damage
+        self.startingTime = currentTime
+        print(f"    {statusOwner} 被吞了 {self.statusDuration}秒后死亡。")
+        
+    def activate(self, currentTime: float) -> bool:
+        if (currentTime - self.startingTime)%100 == 0: #整秒
+            if self.caster.deal_damage_to(opponent=self.statusOwner,damage=self.damage):
+                self.caster.statusDict['swallowing'] = None # 吞结束
+
+    def end(self, currentTime: int):
+        positions = self.caster.get_surrounding(1)
+        print(f"{currentTime/100}   {self.caster}死亡{self.statusOwner}破肚而出。")
+        self.statusOwner.position = positions[randint(0,len(positions))] # 肚子内的棋子重新出现
+        
+        
+class swallowing(statusInterface):
+    def __init__(self,currentTime: int, statusOwner: chessInterface) -> None:
+        super().__init__(statusName = "正在消化", currentTime=currentTime, 
+                         statusDuration=10, statusType="special")
+        self.statusOwner = statusOwner
+        
+        print(f"    {statusOwner} 开始消化")
