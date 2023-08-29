@@ -53,3 +53,21 @@ chessName_dict = {1: '兔子 id:1', 2:'蚂蚁 id:2', 3:"小丑鱼 id:3",
                 23:'大象 id:23',24:'老虎 id:24', # 大象， 老虎
                 25:'独角仙 id:25', 26:'蜘蛛 id:26',  # 独角仙， 蜘蛛
                 27:'章鱼 id:27', 28:'鲨鱼 id:28'} # 章鱼， 鲨鱼
+chessName_dict_inEng = {1: 'rabbit id:1', 2:'ant id:2', 3:"littleUglyFish id:3", 
+                
+                4:"llama id:4", 5:"wolf id:5", 
+                6:'ladyBug id:6', 7: 'bee id:7', 
+                18: 'anglerFish id:8',8: 'swallower id:8', 9:'sea_hog id:9',  
+                
+                10: 'heal_deer id:10', 11: 'monkey id:11', 
+                12: 'hippo id:12', 13: 'bear id:13',
+                14: 'butterfly id:14', 15: 'fireworm id:15',
+                16: 'mantis id:16', 17: 'scorpion id:17', 
+                  
+                30: 'killer_whale id:30', 19: 'electric_e id:19',
+                20: 'crab id:20', 21: 'monocro id:21', 22: 'turtle id:22', 
+
+                23:'elephant id:23',24:'tiger id:24',
+                25:'unicorn_b id:25', 26:'spider id:26', 
+                27:'octopus id:27', 28:'shark id:28',
+                29: 'wolfMinion id:29'} 

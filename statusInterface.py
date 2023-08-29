@@ -29,7 +29,7 @@ class statusInterface:
 
     def activate(self, currentTime: float) -> bool:
         ''' activate the status for the status owner'''
-        print("implement the activate method!!!!")
+        print(f"{self.statusName} implement the activate method!!!!")
         pass
     def addBuff(self, currentTime:int, duration:float):
         print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")

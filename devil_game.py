@@ -1,6 +1,6 @@
 from player import Player
 from battle import * 
-# from random import randint
+# from numpy.random import randint
 
 class devil(Player):
     def __init__(self, id = 666) -> None:

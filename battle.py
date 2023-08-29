@@ -158,6 +158,12 @@ class battle:
                     showNewBoard = True
                     # 说明有棋子被召唤需要更新棋盘
                     break
+                elif self.board[row][col] is not None and \
+                    [row,col] == chessToBeMoved.position and \
+                    'swallowed' in chessToBeMoved.statusDict.keys():
+                    showNewBoard = True
+                    # 说明棋子没死
+                    break
 
         if currentPosition != [-1,-1] and showNewBoard:
             # 说明棋子没死，从新把棋子添加回棋盘

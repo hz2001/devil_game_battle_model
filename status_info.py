@@ -2,7 +2,7 @@ from termcolor import colored
 from chessInterface import chessInterface
 from statusInterface import statusInterface
 from copy import deepcopy
-from random import randint, random
+from numpy.random import randint, random
 # from chess_info import *
 
 statusDictExample= {
@@ -87,8 +87,9 @@ class stunned(statusInterface):
             # 仍然被眩晕，跳过 本次攻击/移动判定
             self.statusOwner.attack_counter = 0
             return True
-    def addBuff(self, currentTime: int, duration: float):
-        print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
+    def addBuff(self, currentTime: int, duration: float, ifPrint = True):
+        if ifPrint:
+            print(f"{currentTime/100}    {self.statusOwner}又被{self.statusName}了")
         if currentTime + int(100*duration) > self.statusEnd:
             self.statusEnd = currentTime + int(100*duration) 
 
@@ -437,23 +438,21 @@ class reviving(statusInterface):
     def __init__(self, 
                  currentTime: int, 
                  statusDuration: float, 
-                 statusOwner: chessInterface,
-                 armor: int) -> None:
+                 statusOwner: chessInterface) -> None:
         super().__init__(statusName = "重生中",
                          currentTime = currentTime,
                          statusDuration = statusDuration,
                          statusType = "status")
         self.statusOwner = statusOwner 
         self.timeElapsed = 0
-        self.newArmor = armor
         print(f"    {statusOwner} 复活中")
     def activate(self, currentTime: float) -> bool:
         if self.timeElapsed > self.statusDuration:
             self.statusOwner.statusDict.pop('reviving', None)
+            self.statusOwner.attack_counter = 0 # reset attack counter
             print(f"{currentTime/100}   {self.statusOwner}的状态【{self}】结束")
-            print(f"{currentTime/100}   {self.statusOwner}已经复活, 护甲增加")
+            # print(f"{currentTime/100}   {self.statusOwner}已经复活, 护甲增加")
             self.statusOwner.health = self.statusOwner.maxHP
-            self.statusOwner.armor = self.newArmor
             return False
         else:
             # print(self.timeElapsed,self.statusDuration)
@@ -533,25 +532,35 @@ class evasionStatus(statusInterface):
 
 
 class swallowed(statusInterface):
-    def __init__(self,currentTime: int, statusDuration: float, 
+    def __init__(self,currentTime: int, 
                  statusOwner: chessInterface, caster: chessInterface, damage: float) -> None:
         super().__init__(statusName = "被吞", currentTime=currentTime, 
-                         statusDuration=statusDuration, statusType="special")
+                         statusDuration=0, statusType="special")
         self.statusOwner = statusOwner
         self.caster = caster 
         self.damage = damage
         self.startingTime = currentTime
-        print(f"    {statusOwner} 被吞了 {self.statusDuration}秒后死亡。")
+        self.statusOwner.position = [-1,-1] # 移出棋盘
+        self.statusOwner.statusDict['stunned'] = stunned(currentTime=currentTime,
+                                                         statusDuration=0.1,
+                                                         statusOwner = statusOwner)
+        print(f"    {statusOwner} 被吞了")
         
     def activate(self, currentTime: float) -> bool:
         if (currentTime - self.startingTime)%100 == 0: #整秒
-            if self.caster.deal_damage_to(opponent=self.statusOwner,damage=self.damage):
+            print(f"    {self.statusOwner}is damaged by swallow")
+            if self.caster.deal_damage_to(currentTime=currentTime,opponent=self.statusOwner,damage=self.damage):
                 self.caster.statusDict['swallowing'] = None # 吞结束
-
-    def end(self, currentTime: int):
-        positions = self.caster.get_surrounding(1)
-        print(f"{currentTime/100}   {self.caster}死亡{self.statusOwner}破肚而出。")
-        self.statusOwner.position = positions[randint(0,len(positions))] # 肚子内的棋子重新出现
+                return False
+        self.statusOwner.statusDict['stunned'].addBuff(currentTime,0.1,ifPrint=False)
+        return True
+    def end(self, currentTime: int,position:list[int]):
+        # unavailPos = [c.position for c in self.caster.allChessDict.values()]
+        # positions = [pos for pos in self.caster.get_surrounding(1) if pos not in unavailPos]
+        # self.statusOwner.position = positions[randint(0,len(positions))] # 肚子内的棋子重新出现
+        self.statusOwner.position = position
+        self.statusOwner.statusDict['stunned'] = None
+        print(f"{currentTime/100}   {self.caster}死亡{self.statusOwner}破肚而出。{self.statusOwner.position}")
         
         
 class swallowing(statusInterface):
@@ -561,3 +570,6 @@ class swallowing(statusInterface):
         self.statusOwner = statusOwner
         
         print(f"    {statusOwner} 开始消化")
+
+    def activate(self, currentTime: float) -> bool:
+        return True
