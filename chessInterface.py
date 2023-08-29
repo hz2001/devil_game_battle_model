@@ -281,7 +281,8 @@ class chessInterface:
                        damage: float,
                        currentTime: int) -> bool:
         """这个方法只造成伤害，伤害是在调用这个方法之前就算好的。这个方法不改变任何值输入值，只改变目标血量和判定特殊情况。
-
+            
+            返回True 如果棋子受伤害后死亡，返回False 如果不是
         Args:
             opponent (chessInterface): _description_
             damage (float): _description_

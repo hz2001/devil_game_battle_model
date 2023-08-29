@@ -21,7 +21,7 @@ class skillInterface:
         self.type = type
         self.description = description
         self.castRange = castRange
-    def cast(self, currentTime, caster, target):
+    def cast(self, currentTime:int, caster, target):
         '''
         parameter： currentTime, caster, opponent
         placeholder， 每一个技能都需要不同的实现'''

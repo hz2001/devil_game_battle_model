@@ -6,6 +6,7 @@ cost1Card = [ant, littleUglyFish, rabbit]
 cost2Card = [llama, wolf, ladybug, bee, swallow, sea_hedgehog]
 
 class Player:
+    allPlayerInfo: dict[int,dict[str,list[chessInterface]|int]] = {}
     def __init__(self, id) -> None:
         self.id = id
         self.turn:int = 1
@@ -20,22 +21,25 @@ class Player:
         self.cost2Chance = 0 # 抽到2星卡的概率
         self.hp = 100
         self.cardLock = False
-        self.chessList = []
+        self.chessList = [] # 存chessInterface object，调用后需要激活
+        Player.allPlayerInfo[self.id]= {'population':self.population,
+                                        'field': self.chessOnField,
+                                        'hand': self.chessInHand}
     def __eq__(a, b):
         return a.id == b.id
 
     def __repr__(self) -> str:
         color = 'red'
         if self.id == 0:
-            color = 'red'
+            color = 'light_red'
         elif self.id == 1: 
-            color = 'blue'
+            color = 'light_blue'
         elif self.id == 2:
-            color = 'green'
+            color = 'light_green'
         elif self.id == 3:
-            color = 'cyan'
+            color = 'light_cyan'
         elif self.id == 666:
-            color = 'black'
+            color = 'light_grey'
         return f"{colored('玩家'+str(self.id),color)}"
     
     def printStatus(self) -> None:
@@ -246,7 +250,6 @@ class Player:
 
     def new_turn(self, turn:int):
         # 玩家回合循环
-        # self.hp -= 10
         row = [3,4,5] # 玩家只能把棋子放在自己这边的棋盘上
         col = [0,1,2,3,4]
         
@@ -259,9 +262,14 @@ class Player:
             self.cardLock = False# 自动解锁
         else:
             self.get_random_chess_to_draw()
+        if turn == 1: #for testing 之后删掉
+            self.goldAvail = 0
+            randChess = self.chessList[randint(0,len(self.chessList))]
+            self.chessInHand.append(randChess())
+            self.chessInHand.append(randChess()) # 两个随机棋子
         
         while True:
-            action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 10.锁定当前棋子 0.完成操作\n")
+            action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 10.锁定当前棋子 11.查看其他玩家信息 0.完成操作\n")
             try:
                 action = int(action)
             except:
@@ -270,18 +278,15 @@ class Player:
             match action:
                 case 1:
                     # 购买棋子
+                    if turn == 1: # 之后有了英雄这一点删除
+                        print("第一回合棋子自动发放。。。")
+                        continue
                     if self.goldAvail < 1:
                         print("当前金币为 0  不能进行购买和升级人口操作.")
                         continue
                     elif len(self.chessInHand) >= 5:
                         print("棋子数量超过手牌上线，不能进行购买.")
                         continue
-                    # chessIndex = -1
-                    # while chessIndex not in [0,1,2] or self.chessList[chessIndex] is None:
-                    #     chessIndex = input(f"现有选项 {[str(index+1)+'. '+str(self.chessList[index]) for index in range(len(self.chessList))]},您的选择是：(0/1/2) 按任意键加回车返回菜单。")
-                    #     chessIndex = int(chessIndex)-1
-                    #     if chessIndex not in [0,1,2]:
-                    #         print("格式不正确，请问您想要【购买】第几个棋子？")
                     try:
                         chessIndex = -1
                         while chessIndex not in [0,1,2] or self.chessList[chessIndex] is None:
@@ -455,6 +460,21 @@ class Player:
                     else:
                         print("当前卡牌锁定状态为 【开启】")
                         self.cardLock = True
+                case 11:
+                    try:
+                        playerID = -1
+                        while playerID not in range(0,4):
+                            playerID = int(input("请输入想查看的玩家id,按任意其他键加回车回到主菜单: "))
+                            if playerID not in range(0,4):
+                                print("please enter a valid player id")
+                        pop = Player.allPlayerInfo[playerID]['population']
+                        field = [(c, c.position) for c in Player.allPlayerInfo[playerID]['field']] 
+                        hand = Player.allPlayerInfo[playerID]['hand']
+                        print(f"{playerID}: 当前人口{pop},场上棋子{field},手中棋子{hand}")
+                    except:
+                        print("已返回主菜单。。。")
+                        continue
+                    
                 case 0:
                     # 完成操作
                     inp = input("确定完成该回合吗，此操作不能取消。1=是 其他键=否")
