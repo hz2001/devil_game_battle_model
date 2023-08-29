@@ -131,27 +131,19 @@ class swarm(skillInterface):
     """ 技能：虫群
         效果：蚂蚁在和其他昆虫一起上真的时候获得全属性加成，每多一个昆虫自身属性增加30%。
     """
-    
-    insect_count = 0
     def __init__(self, attack, armor, health, maxHP) -> None: 
         super().__init__(skillName = "虫群",
                          cd = 0,
                          type = "passive",
                          description= f"人多尼酿大")
-        # self.duration = 0
-        # 不能用target，这样的话会在一个蚂蚁死掉之后其余蚂蚁属性变弱, 所以我们用一个公用的counter
-        # 也不能用teamDict， 因为棋子死掉后会从teamDict 去除掉，有可能带了一个其他棋子死掉了，这样的话teamDict 中所有棋子就都是蚂蚁了
-        swarm.insect_count += 1
-        self.activate = False
-        self.attack = deepcopy(attack)
-        self.armor = deepcopy(armor)
-        self.health = deepcopy(health)
-        self.maxHP = deepcopy(maxHP)
         
-    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface):
-        activate = True
+    def cast(self,currentTime: int, caster: chessInterface, target: chessInterface = None):
+        insectCount = 0
         if not hasattr(caster.statusDict, 'swarm') or caster.statusDict['swarm'] is None:
-            caster.statusDict['swarm'] = swarmStatus()
+            for c in caster.teamDict.values():
+                if c.id in {2,6,7,14,15,16,17,25,26}:
+                    insectCount += 1
+            caster.statusDict['swarm'] = swarmStatus(statusOwner=caster,insectCount=insectCount)
         
 
 class ant(chessInterface):
@@ -160,10 +152,10 @@ class ant(chessInterface):
                          id=2,
                          race = "insect",
                          star = 1,
-                         attack = 20,
+                         attack = 25,
                          attack_interval = 1,
                          attack_range = 1.5,
-                         armor=11,
+                         armor=12,
                          health=250,
                          skill = None)
         self.skill = threeStinkers( attack = self.attack, 
@@ -178,12 +170,14 @@ class ant(chessInterface):
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
+        self.casted = False
 
     def cast(self,currentTime: int):
         ''' bigger
         '''
-        self.skill.cast(currentTime,caster = self,target=self)
-        # super().cast(implemented = True)
+        if not self.casted:
+            self.skill.cast(currentTime,caster = self)
+            self.casted = True 
     def reset(self, test=False):
         threeStinkers.ant_count = 0 # 不重置的话在进行新游戏的时候会不停增加，导致蚂蚁无敌。
         return super().reset(test)
@@ -309,7 +303,7 @@ class llama(chessInterface):
                          attack = 40,
                          attack_interval=1.1,
                          attack_range = 2,
-                         armor=13,
+                         armor=14,
                          health=410,
                          skill = hex())
         self.statusDict = {'moving': None,
@@ -338,7 +332,7 @@ class summonWolfMinions(skillInterface):
                  initialCD: float = 3,
                  type: str = "active",
                  description: str = "召唤两只狼小弟，属性为头狼当前状态的1/3",
-                 duration = 7) -> None:
+                 duration = 6) -> None:
         super().__init__(skillName, cd=cd, type=type, initialCD = initialCD, description = description)
         self.duration = duration
 
@@ -482,7 +476,7 @@ class going_honey(skillInterface):
     def __init__(self,
                  skillName: str = "来一口蜂蜜",
                  cd: float = 6,
-                 initialCD:float = 3,
+                 initialCD:float = 1.75,
                  type: str = "active",
                  description: str = "蜜蜂给一个随机队友喂食蜂蜜，增加其攻速40% 持续3秒",
                  enhanceRatio: float = 0.4,
@@ -516,9 +510,9 @@ class bee(chessInterface):
                          star = 2,
                          attack = 36,
                          attack_interval=1.1,
-                         attack_range = 1.5,
+                         attack_range = 2.5,
                          armor=17,
-                         health=380,
+                         health=456,
                          skill = going_honey())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -690,11 +684,6 @@ class ninjaJump(skillInterface):
         self.baseAttack = baseAttack
     def cast(self, currentTime:int, caster: chessInterface, target = None):
         super().cast(currentTime, caster, target)
-        # find a random place
-        # if caster.team == 0:
-        #     col = [0,1,2]
-        # else:
-        #     col = [3,4,5]
         col = list(range(6))
         availPos = []
         enemyPos = []   
@@ -777,30 +766,29 @@ class hippo(chessInterface):
 
 ############################################################################################################
 # 熊技能
-class earth_shock(skillInterface):
-    def __init__(self, skillName: str = "震撼大地",
-                 cd: float = 7.0,
-                 initialCD:float = 7,
-                 type: str = "active",
-                 description: str = "熊震撼大地，眩晕身边的所有敌人,并且造成伤害",
-                 damage:float = 150,
-                 duration:float = 2.5) -> None:
-        super().__init__(skillName, cd=cd, initialCD = initialCD, type=type, description=description)
+class pawSmash(skillInterface):
+    def __init__(self, 
+                 skillName: str = "镇山掌", 
+                 cd: float = 0, 
+                 initialCD: float = 0,
+                 type: str = "passive", 
+                 description: str = "攻击敌人时有30%的概率造成1.8秒的眩晕",
+                 castRange: float = 100,
+                 chance: float = 0.2,
+                 stunDuration: float = 1.8,
+                 damage: float = 80) -> None:
+        super().__init__(skillName, cd, initialCD, type, description, castRange)
+        self.stunChance = chance 
+        self.stunDuration = stunDuration
         self.damage = damage
-        self.duration = duration
-
-    def cast(self, currentTime, caster: chessInterface, target: chessInterface = None):
-        caster.cd_counter = 0 # reset the counter for this skill
-        print(f"{currentTime/100}  {caster}使用了{self}")
-        for (chessID,chess) in caster.allChessDict.items():
-            if chess.team != caster.team and chess.position in caster.get_surrounding(1) and not chess.isDead:
-                if chess.statusDict['stunned'] is None:
-                    chess.statusDict['stunned'] = stunned(statusOwner=chess,
-                                                        currentTime=currentTime,
-                                                        statusDuration=self.duration)
-                else:
-                    chess.statusDict['stunned'].addBuff(currentTime, self.duration)
-                caster.deal_damage_to(opponent=chess,damage = self.damage, currentTime=currentTime)
+    def cast(self, currentTime:int, caster:chessInterface, target: chessInterface):
+        if random() < self.stunChance:
+            super().cast(currentTime, caster, target)
+            if target.statusDict['stunned'] is None:
+                target.statusDict['stunned'] = stunned(currentTime,self.stunDuration,target)
+            else:
+                target.statusDict['stunned'].addBuff(currentTime=currentTime, duration=self.stunDuration)
+                
 # 熊
 class bear(chessInterface):
     def __init__(self,position = [3,3]):
@@ -812,7 +800,7 @@ class bear(chessInterface):
                          attack_range = 1.5,
                          armor = 31,
                          health= 760,
-                         skill = earth_shock())
+                         skill = pawSmash())
         self.initialPosition = position
         self.position = deepcopy(position)
         self.uniqueID = chessInterface.uniqueID + 1
@@ -822,9 +810,11 @@ class bear(chessInterface):
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
-    def cast(self, currentTime: int):
-        self.skill.cast(currentTime = currentTime, caster = self)
-        super().cast(implemented = True)
+    def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
+        damage = super().do_attack(opponent, currentTime, coefficient)
+        if damage > 0:
+            self.skill.cast(currentTime, caster = self, target = opponent)
+        return damage
 
 #insect
 ############################################################################################################
@@ -854,9 +844,9 @@ class butterfly(chessInterface):
         super().__init__(chessName = "福蝶",id=14,
                          race = "insect",
                          star = 3,
-                         attack = 66,
+                         attack = 60,
                          attack_interval=1.1,
-                         attack_range = 3,
+                         attack_range = 2.5,
                          armor = 22,
                          health= 518,
                          skill = silenceAttack(duration = 1.5))
@@ -883,31 +873,31 @@ class holyLight(skillInterface):
                  cd: float = 1, 
                  initialCD: float = 1,
                  type: str = "active",
-                 description: str = "萤火虫没有攻击力，但是萤火虫圣光所照之地的敌人会受到伤害，而同伴会被治疗", 
+                 description: str = "萤火虫没有攻击力，但是萤火虫圣光所照之地的同伴会被治疗", 
                  castRange: float = 2,
-                 damage = 40) -> None: # 半径为2 的圆圈范围内
+                 damage = 45) -> None: # 半径为2 的圆圈范围内
         super().__init__(skillName, cd=cd, initialCD=initialCD, type=type, description=description, castRange=castRange)
-        self.diameter = castRange
+        self.radius= castRange
         self.damage = damage
 
     def cast(self, currentTime: int, caster:chessInterface, target: chessInterface=None):
-        print(f"{currentTime/100}  {caster}对身旁半径为{self.diameter}的范围释放了{self}")
+        print(f"{currentTime/100}  {caster}对身旁半径为{self.radius}的范围释放了{self}")
         for (uniqueID, chess) in caster.allChessDict.items():
-            if dist(chess.position, caster.position) < self.diameter:
-                if chess.team != caster.team and not chess.isDead:
-                    print(f"{currentTime/100}  {chess}被{self}伤害了")
-                    caster.deal_damage_to(opponent=chess,damage = self.damage,currentTime=currentTime)
-                elif chess.team == caster.team and not chess.isDead:
+            if dist(chess.position, caster.position) < self.radius:
+                if chess.team == caster.team and not chess.isDead:
                     print(f"{currentTime/100}  {chess}被{self}治疗了")
                     chess.heal(self.damage)
+                # elif chess.team != caster.team and not chess.isDead:
+                #     print(f"{currentTime/100}  {chess}被{self}伤害了")
+                #     caster.deal_damage_to(opponent=chess,damage = self.damage,currentTime=currentTime)
 
 class fireworm(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "萤火虫",id=15,
                          race = "insect",
                          star = 3,
-                         attack = 0, # special
-                         attack_interval=100, # special
+                         attack = 30, 
+                         attack_interval=0.9, # special,因为每一次施法都会打断下一次攻击
                          attack_range = 2,
                          armor = 24,
                          health= 650,
@@ -977,7 +967,7 @@ class sand_poison(skillInterface):
                  cd: float = 0,
                  type: str = "passive",
                  description: str = "蝎子向目标注射沙漠剧毒，让其在长时间内收到大量伤害",
-                 damage: float = 100.0,
+                 damage: float = 90.0,
                  duration:float = 5) -> None:
         super().__init__(skillName, cd=cd, type=type, description=description)
         self.damage = damage
@@ -1026,8 +1016,8 @@ class scorpion(chessInterface):
 ############################################################################################################
 class deathBeam(skillInterface):
     def __init__(self,
-                baseDamage=300, 
-                ceilingDamage=600) -> None:
+                baseDamage=0, 
+                ceilingDamage=500) -> None:
         super().__init__(skillName= "死亡射线",
                          cd = 5,
                          initialCD = 5,
@@ -1043,7 +1033,7 @@ class deathBeam(skillInterface):
         for (uniqueID, chess) in caster.allChessDict.items():
             if chess.team != caster.team and not \
                 chess.isDead and \
-                dist(chess.position, caster.position) <= self.castRange : # 目标要活着
+                dist(chess.position, caster.posistion) <= self.castRange : # 目标要活着
                 targetList.append(chess)
         if targetList == []:
             # 没有合适的对象
@@ -1058,8 +1048,8 @@ class anglerfish(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "灯笼鱼",id=18,
                          race = "marine",
-                         star = 3,
-                         attack = 45,
+                         star = 2,
+                         attack = 38,
                          attack_interval=1.0,
                          attack_range = 2,
                          armor = 17,
@@ -1078,6 +1068,63 @@ class anglerfish(chessInterface):
         if self.skill.cast(currentTime=currentTime,caster= self,target=None):
             # 如果施放成功
             return super().cast(implemented = True)
+
+############################################################################################################
+class whaleSwallow(skillInterface):
+    def __init__(self, skillName: str = "鲸吞", 
+                 cd: float = 7, 
+                 initialCD: float = 2.25, 
+                 type: str = "passive", 
+                 description: str = "一口吃掉一个1-3星敌人，每秒伤害60点，如果虎鲸死掉则肚内棋子破肚而出。", 
+                 castRange: float = 1.5) -> None:
+        super().__init__(skillName, cd, initialCD, type, description, castRange)
+        self.swallowing = False
+        self.target = None
+
+    def cast(self, currentTime: int, caster: chessInterface, target = None) -> bool:
+        if self.swallowing and caster.isDead:
+            self.target.statusDict['swallowed'].end(currentTime)
+            self.target.statusDict['swallowed'] = None
+            return False
+        elif self.swallowing:
+            return False
+        else:
+            self.target = caster.get_hate_mechanism()
+            self.swallowing = True
+            super().cast(currentTime, caster, target)
+            self.target.statusDict['swallowed'] = swallowed()
+            return True
+            
+        
+class killer_whale(chessInterface):
+    def __init__(self,position = [3,3]):
+        super().__init__(chessName = "虎鲸",id=30,
+                         race = "marine",
+                         star = 3,
+                         attack = 88,
+                         attack_interval=1.2,
+                         attack_range = 2,
+                         armor = 17,
+                         health= 470,
+                         skill = whaleSwallow())
+        self.statusDict = {'moving': None,
+            'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowing': swallowing(),
+            'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
+        self.initialPosition = position
+        self.position = deepcopy(position)
+        self.uniqueID = chessInterface.uniqueID + 1
+        chessInterface.uniqueID += 1
+    
+    def cast(self, currentTime: int):
+        if self.skill.cast(currentTime=currentTime,caster= self,target=None):
+            # 如果施放成功
+            return super().cast(implemented = True)
+    def check_death(self, currentTime: int) -> bool:
+        isDead = super().check_death(currentTime)
+        if isDead: # 如果自己死掉，则肚子中的棋子破肚而出
+            self.skill.cast(currentTime=currentTime, caster= self)
+        return isDead
 
 ############################################################################################################
 class electricChain(skillInterface):
@@ -1239,6 +1286,7 @@ class retracted_taunt(skillInterface):
         positions = caster.get_surrounding(searchingRange=1)
         for chess in caster.allChessDict.values():
             if chess.position in positions and chess.team != caster.team:
+                
                 if chess.statusDict['taunted'] is None:
                     chess.statusDict['taunted'] = taunted(currentTime = currentTime,
                                                           statusDuration= self.duration,
@@ -1273,28 +1321,34 @@ class turtle(chessInterface):
 
 # 4星
 #mammal
-############################################################################################################
+############################################################################################################    
 class warSmash(skillInterface):
-    def __init__(self, skillName: str = "战争重碾",
-                 cd: float = 10, # 一锤定音
-                 initialCD: float = 10,
-                 type: str = "active", 
-                 description: str = "大象蓄力后向一个方向冲锋，对路径和周围的敌人造成伤害并且击退",
-                 castRange: float = 3,
-                 hold: float = 2.0 #蓄力时间
-                 ) -> None:
-        super().__init__(skillName, cd, initialCD, type, description, castRange)
-        
-    def cast(self, currentTime: int, caster: chessInterface, target = None):
-        target = []
-        # 选定方向
-        
-        # 蓄力
-        
-        # 冲锋
-        print(f"{currentTime/100}  {caster}使用了{self}")        
+    def __init__(self, skillName: str = "战争践踏",
+                 cd: float = 8.0,
+                 initialCD:float = 8,
+                 type: str = "active",
+                 description: str = "震撼大地，眩晕身边的所有敌人,并且造成伤害",
+                 damage:float = 150,
+                 duration:float = 3,
+                 radians: int = 2) -> None:
+        super().__init__(skillName, cd=cd, initialCD = initialCD, type=type, description=description)
+        self.damage = damage
+        self.duration = duration
+        self.radians = radians
 
-class elephant(chessInterface): # 所有人aoe眩晕/超大范围伤害/所有队友免疫伤害/所有队友伤害吸收转移到自身/所有队友攻击力提升
+    def cast(self, currentTime, caster: chessInterface, target: chessInterface = None):
+        caster.cd_counter = 0 # reset the counter for this skill
+        print(f"{currentTime/100}  {caster}使用了{self}")
+        for (chessID,chess) in caster.allChessDict.items():
+            if chess.team != caster.team and chess.position in caster.get_surrounding(self.radians) and not chess.isDead:
+                if chess.statusDict['stunned'] is None:
+                    chess.statusDict['stunned'] = stunned(statusOwner=chess,
+                                                        currentTime=currentTime,
+                                                        statusDuration=self.duration)
+                else:
+                    chess.statusDict['stunned'].addBuff(currentTime, self.duration)
+                caster.deal_damage_to(opponent=chess,damage = self.damage, currentTime=currentTime)
+class elephant(chessInterface):
     def __init__(self,position = [3,3]):
         super().__init__(chessName = "大象",id=23,
                          race = "mammal",
@@ -1314,9 +1368,9 @@ class elephant(chessInterface): # 所有人aoe眩晕/超大范围伤害/所有�
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
 
-    def cast(self, currentTime: int = 0):
-        
-        return super().cast(currentTime, implemented = True)
+    def cast(self, currentTime: int):
+        self.skill.cast(currentTime = currentTime, caster = self)
+        super().cast(implemented = True)
 ############################################################################################################
 # old虎
 class bite(skillInterface):
@@ -1328,7 +1382,7 @@ class bite(skillInterface):
                          cd = 6,
                          initialCD = 6,
                          type = "active",
-                         description=f"老虎撕裂目标，造成150%攻击伤害，使对手收到的所有伤害增加{amplification}，并且流血,在{duration}秒内共造成{duration*bleedInstanceDamage}点伤害",
+                         description=f"老虎撕裂目标，造成150%攻击伤害，使对手收到的所有伤害增加{amplification}", # 并且流血,在{duration}秒内共造成{duration*bleedInstanceDamage}点伤害
                          castRange = 1.5)
         self.duration = duration
         self.amplification = amplification
@@ -1344,14 +1398,14 @@ class bite(skillInterface):
         else:
             target.statusDict['vulnerable'].addBuff(currentTime, self.duration, amplification=self.amplification) # 看谁的amp高，不叠加时间
             
-        if target.statusDict['bleeding'] is None:
-            target.statusDict['bleeding'] = bleeding(currentTime=currentTime,
-                                                    statusDuration=self.duration,
-                                                    statusOwner=target,
-                                                    caster=caster,
-                                                    instanceDamage=self.instanceDamage)
-        else:
-            target.statusDict['bleeding'].addBuff(currentTime, self.duration) # 叠加时间
+        # if target.statusDict['bleeding'] is None: # 去掉流血效果
+        #     target.statusDict['bleeding'] = bleeding(currentTime=currentTime,
+        #                                             statusDuration=self.duration,
+        #                                             statusOwner=target,
+        #                                             caster=caster,
+        #                                             instanceDamage=self.instanceDamage)
+        # else:
+        #     target.statusDict['bleeding'].addBuff(currentTime, self.duration) # 叠加时间
         caster.do_attack(opponent=target, coefficient=1.5, currentTime=currentTime)
         
 
@@ -1610,7 +1664,7 @@ class octopus(chessInterface):
 
 ############################################################################################################
 class abyssBite(skillInterface):
-    def __init__(self, baseAttack:int, increaseMultiplier = 20) -> None:
+    def __init__(self, baseAttack:int, increaseMultiplier = 15) -> None:
         super().__init__(skillName = "深渊撕咬",
                          cd = 0,
                          type= "passive", 
