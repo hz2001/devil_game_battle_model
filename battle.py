@@ -280,21 +280,21 @@ class battle:
         # return the won team 
         return wonTeam, current_time
 
-# def main():
-#     newBattle = battle()
-#     # redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
-#     #            mantis(position=[1,4]),unicorn_b(position=[2,4])]
-#     # blueTeam = [tiger(position=[3,3]),
-#     #             anglerfish(position=[4,0]),hippo(position=[4,2]),
-#     #            bee(position=[5,2]),fireworm(position=[5,4])]
-#     redTeam = [octopus(position = [2,2])]
-#     blueTeam = [fireworm(position = [3,0]),fireworm(position = [3,1]),fireworm(position = [4,3]),fireworm(position = [5,4])]
+def main():
+    newBattle = battle()
+    # redTeam = [ladybug(position=[0,0]),turtle(position=[0,1]),butterfly(position=[0,3]),
+    #            mantis(position=[1,4]),unicorn_b(position=[2,4])]
+    # blueTeam = [tiger(position=[3,3]),
+    #             anglerfish(position=[4,0]),hippo(position=[4,2]),
+    #            bee(position=[5,2]),fireworm(position=[5,4])]
+    redTeam = [monkey(position = [2,2])]
+    blueTeam = [fireworm(position = [3,0]),fireworm(position = [3,1]),fireworm(position = [4,3]),fireworm(position = [5,4])]
 
 
-#     newBattle.addRedTeam(redTeam)
-#     newBattle.addBlueTeam(blueTeam)
-#     # newBattle.battle_between_2(newBattle.redTeamChess[0], newBattle.blueTeamChess[0])
-#     newBattle.battle_with_skills()
+    newBattle.addRedTeam(redTeam)
+    newBattle.addBlueTeam(blueTeam)
+    # newBattle.battle_between_2(newBattle.redTeamChess[0], newBattle.blueTeamChess[0])
+    newBattle.battle_with_skills()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

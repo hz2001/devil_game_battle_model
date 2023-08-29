@@ -684,6 +684,36 @@ class ninjaJump(skillInterface):
         self.baseAttack = baseAttack
     def cast(self, currentTime:int, caster: chessInterface, target = None):
         super().cast(currentTime, caster, target)
+        '''寻找最佳打人位______________________________________'''
+        dest_intent = [[-1 for _ in range(5)] for _ in range(6)]
+        print(dest_intent)
+        for chess in caster.allChessDict.values():
+            if chess.team != caster.team:
+                enemy = chess
+                enemyPos = chess.position
+                max_update_radius = max(caster.attack_range,enemy.attack_range)
+                for i in range(max(0,enemyPos[0]-max_update_radius),min(6,enemyPos[0]+max_update_radius)):
+                    for j in range(max(0,enemyPos[1]-max_update_radius),min(5,enemyPos[1]+max_update_radius)):
+                        if dist([i,j], enemyPos) <= enemy.attack_range:
+                        # if abs(enemyPos[0]-i) <= enemy.attack_range and abs(enemyPos[1]-j) <= enemy.attack_range:
+                            dest_intent[i][j]-=1 # 谈笑间gg
+                        if dist([i,j], enemyPos) <= caster.attack_range:
+                        # if abs(enemyPos[0]-i) <= caster.attack_range and abs(enemyPos[1]-j) <= caster.attack_range:
+                            dest_intent[i][j]+=2 # 优先打人
+                # enemyPos.append(chess.position)
+                dest_intent[enemyPos[0]][enemyPos[1]]-=100
+        for r in dest_intent:
+            print(r)
+        best_location = [-1,-1]
+        best_intent = -1
+        for i in range(6):
+            for j in range(5):
+                if dest_intent[i][j] > best_intent:
+                    best_location = [i,j]
+                    best_intent = dest_intent[i][j]
+        print(best_location)
+        '''找到了______________________________________'''
+        raise Exception('看这里')
         col = list(range(6))
         availPos = []
         enemyPos = []   
@@ -718,7 +748,7 @@ class monkey(chessInterface):
                          attack_range = 3,
                          armor = 14,
                          health= 288,
-                         skill = None)
+                         skill = ninjaJump(74))
         self.skill = ninjaJump(baseAttack=self.attack)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
