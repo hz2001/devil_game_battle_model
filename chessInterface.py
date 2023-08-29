@@ -117,7 +117,6 @@ class chessInterface:
         self.resetPosition()
         self.resetHealth()
         self.resetStatus()
-        self.totalDamage = 0
         self.cd_counter = 0
         self.attack_counter = 0
         # print(self,f"被重置了，位置为{self.position},血量为{self.health}/{self.maxHP}")

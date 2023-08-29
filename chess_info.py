@@ -131,7 +131,7 @@ class swarm(skillInterface):
     """ 技能：虫群
         效果：蚂蚁在和其他昆虫一起上真的时候获得全属性加成，每多一个昆虫自身属性增加30%。
     """
-    def __init__(self, attack, armor, health, maxHP) -> None: 
+    def __init__(self) -> None: 
         super().__init__(skillName = "虫群",
                          cd = 0,
                          type = "passive",
@@ -152,16 +152,12 @@ class ant(chessInterface):
                          id=2,
                          race = "insect",
                          star = 1,
-                         attack = 25,
+                         attack = 21,
                          attack_interval = 1,
                          attack_range = 1.5,
-                         armor=12,
+                         armor=10,
                          health=250,
-                         skill = None)
-        self.skill = threeStinkers( attack = self.attack, 
-                                   armor= self.armor, 
-                                   health= self.health, 
-                                   maxHP=self.maxHP)
+                         skill = swarm())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
             'blood_draining':None, 'sand_poisoned': None, 'broken': None,
@@ -1033,7 +1029,7 @@ class deathBeam(skillInterface):
         for (uniqueID, chess) in caster.allChessDict.items():
             if chess.team != caster.team and not \
                 chess.isDead and \
-                dist(chess.position, caster.posistion) <= self.castRange : # 目标要活着
+                dist(chess.position, caster.position) <= self.castRange : # 目标要活着
                 targetList.append(chess)
         if targetList == []:
             # 没有合适的对象
@@ -1076,23 +1072,31 @@ class whaleSwallow(skillInterface):
                  initialCD: float = 2.25, 
                  type: str = "passive", 
                  description: str = "一口吃掉一个1-3星敌人，每秒伤害60点，如果虎鲸死掉则肚内棋子破肚而出。", 
-                 castRange: float = 1.5) -> None:
+                 castRange: float = 1.5,
+                 damage = 60) -> None:
         super().__init__(skillName, cd, initialCD, type, description, castRange)
         self.swallowing = False
         self.target = None
+        self.damage = damage
 
-    def cast(self, currentTime: int, caster: chessInterface, target = None) -> bool:
+    def cast(self, currentTime: int, caster: chessInterface) -> bool:
         if self.swallowing and caster.isDead:
-            self.target.statusDict['swallowed'].end(currentTime)
+            self.target.statusDict['swallowed'].end(currentTime,caster.deathPos)
             self.target.statusDict['swallowed'] = None
             return False
         elif self.swallowing:
             return False
+        elif caster.isDead:
+            return False
         else:
             self.target = caster.get_hate_mechanism()
+            if self.target.star > 3:
+                return False
             self.swallowing = True
-            super().cast(currentTime, caster, target)
-            self.target.statusDict['swallowed'] = swallowed()
+            super().cast(currentTime, caster, self.target)
+            self.target.statusDict['swallowed'] = swallowed(currentTime=currentTime,
+                                                            statusOwner = self.target,
+                                                            caster = caster, damage = self.damage)
             return True
             
         
@@ -1103,13 +1107,13 @@ class killer_whale(chessInterface):
                          star = 3,
                          attack = 88,
                          attack_interval=1.2,
-                         attack_range = 2,
+                         attack_range = 1.5,
                          armor = 17,
-                         health= 470,
+                         health= 638,
                          skill = whaleSwallow())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowing': swallowing(),
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowing': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1117,10 +1121,12 @@ class killer_whale(chessInterface):
         chessInterface.uniqueID += 1
     
     def cast(self, currentTime: int):
-        if self.skill.cast(currentTime=currentTime,caster= self,target=None):
+        if self.skill.cast(currentTime=currentTime,caster= self):
             # 如果施放成功
+            self.statusDict['swallowing'] = swallowing(currentTime, self)
             return super().cast(implemented = True)
     def check_death(self, currentTime: int) -> bool:
+        self.deathPos = deepcopy(self.position)
         isDead = super().check_death(currentTime)
         if isDead: # 如果自己死掉，则肚子中的棋子破肚而出
             self.skill.cast(currentTime=currentTime, caster= self)
@@ -1452,12 +1458,11 @@ class rebirth(skillInterface):
         self.duration = duration
         self.bonusArmor = bonusArmor
     
-    def cast(self, currentTime:int, caster:chessInterface, target: chessInterface):
-        newArmor = caster.armor + self.bonusArmor
-        target.statusDict['reviving'] = reviving(currentTime=currentTime,
+    def cast(self, currentTime:int, caster:chessInterface):
+        caster.statusDict['reviving'] = reviving(currentTime=currentTime,
                                                      statusDuration=self.duration,
-                                                     statusOwner=target,armor=newArmor) 
-        target.isDead = False
+                                                     statusOwner=caster) 
+        caster.isDead = False
         
         
 class unicorn_b(chessInterface):
@@ -1468,8 +1473,8 @@ class unicorn_b(chessInterface):
                          attack = 112, # 有点低
                          attack_interval=0.6,
                          attack_range = 4,
-                         armor = 16,
-                         health= 560,
+                         armor = 30,
+                         health= 860,
                          skill = rebirth())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
@@ -1482,8 +1487,8 @@ class unicorn_b(chessInterface):
         self.revived = False
 
     def cast(self, currentTime: int):
-        self.skill.cast(currentTime=currentTime,caster=self,target=self)
-        return super().cast(implemented = True)
+        pass
+        # return super().cast(implemented = True)
     
     def can_attack(self) -> bool:
         if 'reviving' not in self.statusDict:
@@ -1518,7 +1523,7 @@ class unicorn_b(chessInterface):
                     del self.teamDict[self.uniqueID]
                     return True
             else:
-                self.cast(currentTime=0)
+                self.skill.cast(currentTime=currentTime,caster=self)
                 self.health = 1
                 self.revived = True
                 return False
