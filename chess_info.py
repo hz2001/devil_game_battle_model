@@ -72,7 +72,7 @@ class rabbit(chessInterface):
                          skill = huishoutao())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -160,7 +160,7 @@ class ant(chessInterface):
                          skill = swarm())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -174,9 +174,6 @@ class ant(chessInterface):
         if not self.casted:
             self.skill.cast(currentTime,caster = self)
             self.casted = True 
-    def reset(self, test=False):
-        threeStinkers.ant_count = 0 # 不重置的话在进行新游戏的时候会不停增加，导致蚂蚁无敌。
-        return super().reset(test)
 
 ############################################################################################################
 # 小丑鱼
@@ -248,7 +245,7 @@ class littleUglyFish(chessInterface):
         self.skill.initialHealth = self.health
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -304,7 +301,7 @@ class llama(chessInterface):
                          skill = hex())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -384,7 +381,7 @@ class wolf(chessInterface):
                          skill = skill)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -453,7 +450,7 @@ class ladybug(chessInterface):
                          skill = transformation()) # 之前太强了，削弱一些
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -512,7 +509,7 @@ class bee(chessInterface):
                          skill = going_honey())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -555,7 +552,7 @@ class swallower(chessInterface):
                          skill = skill)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -595,7 +592,7 @@ class sea_hedgehog(chessInterface):
                          skill = dispersion_skill())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None ,
             "dispersion_status": None}
         self.initialPosition = position
@@ -652,7 +649,7 @@ class heal_deer(chessInterface):
                          skill = normalHeal())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -718,7 +715,7 @@ class monkey(chessInterface):
         self.skill = ninjaJump(baseAttack=self.attack)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -752,7 +749,7 @@ class hippo(chessInterface):
                          skill = antiInsect())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -803,7 +800,7 @@ class bear(chessInterface):
         chessInterface.uniqueID += 1
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
     def do_attack(self, opponent: chessInterface, currentTime: int, coefficient: float = 1) -> float:
@@ -848,7 +845,7 @@ class butterfly(chessInterface):
                          skill = silenceAttack(duration = 1.5))
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -900,7 +897,7 @@ class fireworm(chessInterface):
                          skill = holyLight())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -938,7 +935,7 @@ class mantis(chessInterface):
                          skill = skill )
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -993,7 +990,7 @@ class scorpion(chessInterface):
                          skill = skill)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1053,7 +1050,7 @@ class anglerfish(chessInterface):
                          skill = deathBeam())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None, 
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1076,28 +1073,35 @@ class whaleSwallow(skillInterface):
                  damage = 60) -> None:
         super().__init__(skillName, cd, initialCD, type, description, castRange)
         self.swallowing = False
-        self.target = None
+        self.target:chessInterface = None
         self.damage = damage
 
     def cast(self, currentTime: int, caster: chessInterface) -> bool:
-        if self.swallowing and caster.isDead:
+        if self.swallowing and caster.isDead and self.target is not None:
+            print("deathPos",caster.deathPos)
             self.target.statusDict['swallowed'].end(currentTime,caster.deathPos)
-            self.target.statusDict['swallowed'] = None
             return False
-        elif self.swallowing:
-            return False
-        elif caster.isDead:
-            return False
-        else:
-            self.target = caster.get_hate_mechanism()
-            if self.target.star > 3:
+        elif not self.swallowing:
+            targetList:list[chessInterface] = []
+            for (uniqueID, chess) in caster.allChessDict.items():
+                if chess.team != caster.team and not \
+                    chess.isDead and \
+                    chess.star <= 3 and \
+                    dist(chess.position, caster.position) <= self.castRange : # 目标要活着
+                    targetList.append(chess)
+            if targetList == []:
+                # 没有合适的对象
                 return False
+            self.target = targetList[randint(0, len(targetList))] 
             self.swallowing = True
             super().cast(currentTime, caster, self.target)
             self.target.statusDict['swallowed'] = swallowed(currentTime=currentTime,
                                                             statusOwner = self.target,
                                                             caster = caster, damage = self.damage)
             return True
+        elif self.swallowing and caster.isDead and self.target is None:
+            print("very strange hahaha")
+        return False
             
         
 class killer_whale(chessInterface):
@@ -1113,7 +1117,7 @@ class killer_whale(chessInterface):
                          skill = whaleSwallow())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowing': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None, 'swallowing': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1128,7 +1132,7 @@ class killer_whale(chessInterface):
     def check_death(self, currentTime: int) -> bool:
         self.deathPos = deepcopy(self.position)
         isDead = super().check_death(currentTime)
-        if isDead: # 如果自己死掉，则肚子中的棋子破肚而出
+        if isDead and self.statusDict['swallowing'] is not None: # 如果自己死掉，则肚子中的棋子破肚而出
             self.skill.cast(currentTime=currentTime, caster= self)
         return isDead
 
@@ -1181,7 +1185,7 @@ class electric_eel(chessInterface):
                          skill = electricChain())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1208,7 +1212,7 @@ class crab(chessInterface):
                          skill = None)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1263,7 +1267,7 @@ class monoceros(chessInterface):
                          skill = strikeThrough())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1314,7 +1318,7 @@ class turtle(chessInterface):
                          skill = retracted_taunt())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1367,7 +1371,7 @@ class elephant(chessInterface):
                          skill = warSmash())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1428,7 +1432,7 @@ class tiger(chessInterface):
                          skill = bite())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1478,7 +1482,7 @@ class unicorn_b(chessInterface):
                          skill = rebirth())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1594,7 +1598,7 @@ class spider(chessInterface):
                          skill = ensnarement())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1656,7 +1660,7 @@ class octopus(chessInterface):
                          skill = tentacles())
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.initialPosition = position
         self.position = deepcopy(position)
@@ -1707,7 +1711,7 @@ class shark(chessInterface):
         self.skill = abyssBite(baseAttack=self.attack)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         self.skill = abyssBite(baseAttack= self.attack)
         self.initialPosition = position
@@ -1741,7 +1745,7 @@ class minionDevil(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
         
 
@@ -1762,7 +1766,7 @@ class guardDevil(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
 
@@ -1783,7 +1787,7 @@ class trollDevilMelee(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
 
@@ -1804,7 +1808,7 @@ class trollDevilRanged(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
 
@@ -1849,7 +1853,7 @@ class trollDevilSupplier(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
 
     def cast(self, currentTime):
@@ -1892,7 +1896,7 @@ class devilDragon(chessInterface):
         self.position = deepcopy(position)
         self.statusDict = {'moving': None,
             'silenced': None, 'disarmed':None, 'stunned': None, 'hexed': None, 'taunted': None,
-            'blood_draining':None, 'sand_poisoned': None, 'broken': None,
+            'blood_draining':None, 'sand_poisoned': None, 'broken': None, 'swallowed': None,
             'armor_change':None, 'attack_change':None, 'attack_interval_change':None,'vulnerable':None,'bleeding':None }
     
     
