@@ -6,9 +6,10 @@ cost1Card = [ant, littleUglyFish, rabbit]
 cost2Card = [llama, wolf, ladybug, bee, swallow, sea_hedgehog]
 
 class Player:
-    allPlayerInfo: dict[int,dict[str,list[chessInterface]|int]] = {}
+    allPlayerInfo: dict[int,dict[str,list[chessInterface]|int|str]] = {}
     def __init__(self, id) -> None:
         self.id = id
+        self.name = '请输入名称'
         self.turn:int = 1
         self.chesses: dict[int, chessInterface] = {}
         self.chessInHand: list[chessInterface] = [] # max Of 5 cards
@@ -40,7 +41,7 @@ class Player:
             color = 'light_cyan'
         elif self.id == 666:
             color = 'light_grey'
-        return f"{colored('玩家'+str(self.id),color)}"
+        return f"{colored('玩家 @'+self.name+'@ ID '+str(self.id),color)}"
     
     def printStatus(self) -> None:
         print (f"\n" + \
@@ -257,17 +258,20 @@ class Player:
             self.next_turn()
         if self.check_death():
             print(self,"is Dead")
-        self.printStatus() # 显示玩家当前信息
         if self.cardLock:
             self.cardLock = False# 自动解锁
         else:
             self.get_random_chess_to_draw()
-        if turn == 1: #for testing 之后删掉
+        if turn == 1: # for testing 之后删掉
             self.goldAvail = 0
             randChess = self.chessList[randint(0,len(self.chessList))]
-            self.chessInHand.append(randChess())
-            self.chessInHand.append(randChess()) # 两个随机棋子
-        
+            chess1 = randChess()
+            chess2 = randChess()
+            self.chessInHand.append(chess1)
+            self.chesses[chess1.uniqueID] = chess1
+            self.chessInHand.append(chess2) # 两个随机棋子
+            self.chesses[chess2.uniqueID] = chess2
+        self.printStatus() # 显示玩家当前信息
         while True:
             action = input(f"\n{self},您要做的事情是：\n1.购买棋子 2.重新抽卡 3.出售棋子 4.上阵棋子 5.下场棋子 6.升级棋子 7.升级人口 8.变更棋子位置 9.查看当前状态 10.锁定当前棋子 11.查看其他玩家信息 0.完成操作\n")
             try:
@@ -463,14 +467,14 @@ class Player:
                 case 11:
                     try:
                         playerID = -1
-                        while playerID not in range(0,4):
-                            playerID = int(input("请输入想查看的玩家id,按任意其他键加回车回到主菜单: "))
-                            if playerID not in range(0,4):
+                        while playerID not in range(len(list(Player.allPlayerInfo.keys()))):
+                            playerID = int(input(f"请输入想查看的玩家id,按任意其他键加回车回到主菜单: 选项有{list(Player.allPlayerInfo.keys())}"))
+                            if playerID not in range(len(list(Player.allPlayerInfo.keys()))):
                                 print("please enter a valid player id")
                         pop = Player.allPlayerInfo[playerID]['population']
                         field = [(c, c.position) for c in Player.allPlayerInfo[playerID]['field']] 
                         hand = Player.allPlayerInfo[playerID]['hand']
-                        print(f"{playerID}: 当前人口{pop},场上棋子{field},手中棋子{hand}")
+                        print(f"{Player.allPlayerInfo[playerID]['name']}: 当前人口{pop},场上棋子{field},手中棋子{hand}")
                     except:
                         print("已返回主菜单。。。")
                         continue

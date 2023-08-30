@@ -85,7 +85,10 @@ class game:
             return None
         
     def add_player(self):
-        self.players[self.playerID] = Player(id = self.playerID)
+        newPlayer = Player(id = self.playerID)
+        name = input(f"正在加入玩家{self.playerID},请输入玩家名称：")
+        newPlayer.name = name
+        self.players[self.playerID] = newPlayer
         print(self.players[self.playerID], "加入成功。")
         self.alivePlayers.append(self.playerID)
         self.playerID += 1
