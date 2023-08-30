@@ -676,15 +676,14 @@ class ninjaJump(skillInterface):
         self.coefficient = coefficient
         self.baseAttack = baseAttack
     def cast(self, currentTime:int, caster: chessInterface, target = None):
-        super().cast(currentTime, caster, target)
         '''寻找最佳打人位______________________________________'''
         dest_intent = [[-1 for _ in range(5)] for _ in range(6)]
-        print(dest_intent)
+        # print(dest_intent)
         for chess in caster.allChessDict.values():
             if chess.team != caster.team:
                 enemy = chess
                 enemyPos = chess.position
-                max_update_radius = max(caster.attack_range,enemy.attack_range)
+                max_update_radius = floor(max(caster.attack_range,enemy.attack_range))
                 for i in range(max(0,enemyPos[0]-max_update_radius),min(6,enemyPos[0]+max_update_radius)):
                     for j in range(max(0,enemyPos[1]-max_update_radius),min(5,enemyPos[1]+max_update_radius)):
                         if dist([i,j], enemyPos) <= enemy.attack_range:
@@ -695,8 +694,8 @@ class ninjaJump(skillInterface):
                             dest_intent[i][j]+=2 # 优先打人
                 # enemyPos.append(chess.position)
                 dest_intent[enemyPos[0]][enemyPos[1]]-=100
-        for r in dest_intent:
-            print(r)
+        # for r in dest_intent:
+        #     print(r)
         best_location = [-1,-1]
         best_intent = -1
         for i in range(6):
@@ -704,9 +703,11 @@ class ninjaJump(skillInterface):
                 if dest_intent[i][j] > best_intent:
                     best_location = [i,j]
                     best_intent = dest_intent[i][j]
-        print(best_location)
+        caster.position = best_location
+        print(f"{currentTime/100}   {caster}jump到了{best_location}")
         '''找到了______________________________________'''
         # raise Exception('看这里')
+        
         # col = list(range(6))
         # availPos = []
         # enemyPos = []   
@@ -898,7 +899,7 @@ class holyLight(skillInterface):
                  type: str = "active",
                  description: str = "萤火虫没有攻击力，但是萤火虫圣光所照之地的同伴会被治疗", 
                  castRange: float = 2,
-                 damage = 45) -> None: # 半径为2 的圆圈范围内
+                 damage = 35) -> None: # 半径为2 的圆圈范围内
         super().__init__(skillName, cd=cd, initialCD=initialCD, type=type, description=description, castRange=castRange)
         self.radius= castRange
         self.damage = damage
@@ -1369,7 +1370,7 @@ class warSmash(skillInterface):
                  type: str = "active",
                  description: str = "震撼大地，眩晕身边的所有敌人,并且造成伤害",
                  damage:float = 150,
-                 duration:float = 3,
+                 duration:float = 2.75,
                  radians: int = 2) -> None:
         super().__init__(skillName, cd=cd, initialCD = initialCD, type=type, description=description)
         self.damage = damage
@@ -1396,7 +1397,7 @@ class elephant(chessInterface):
                          attack = 115,
                          attack_interval=1.2,
                          attack_range = 2,
-                         armor = 46,
+                         armor = 41,
                          health= 1600,
                          skill = warSmash())
         self.statusDict = {'moving': None,
