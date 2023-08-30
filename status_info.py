@@ -544,12 +544,19 @@ class swallowed(statusInterface):
         self.statusOwner.statusDict['stunned'] = stunned(currentTime=currentTime,
                                                          statusDuration=0.1,
                                                          statusOwner = statusOwner)
+        self.gotOut = False
         print(f"    {statusOwner} 被吞了")
         
     def activate(self, currentTime: float) -> bool:
+        if self.gotOut:
+            self.statusOwner.statusDict['swallowed'] = None # 为了棋盘更新
+            return False
         if (currentTime - self.startingTime)%100 == 0: #整秒
-            print(f"    {self.statusOwner}is damaged by swallow")
-            if self.caster.deal_damage_to(currentTime=currentTime,opponent=self.statusOwner,damage=self.damage):
+            print(f"{self.caster.cd_counter}")
+            killed = self.caster.deal_damage_to(currentTime=currentTime,opponent=self.statusOwner,damage=self.damage)
+            print(f"    {self.statusOwner}is damaged by swallow, 剩余血量{self.statusOwner.health}/{self.statusOwner.maxHP}")
+            if killed:
+                print("消化完成")
                 self.caster.statusDict['swallowing'] = None # 吞结束
                 return False
         self.statusOwner.statusDict['stunned'].addBuff(currentTime,0.1,ifPrint=False)
@@ -560,6 +567,7 @@ class swallowed(statusInterface):
         # self.statusOwner.position = positions[randint(0,len(positions))] # 肚子内的棋子重新出现
         self.statusOwner.position = position
         self.statusOwner.statusDict['stunned'] = None
+        self.gotOut = True
         print(f"{currentTime/100}   {self.caster}死亡{self.statusOwner}破肚而出。{self.statusOwner.position}")
         
         
