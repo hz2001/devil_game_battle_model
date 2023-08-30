@@ -292,9 +292,8 @@ def main():
     # blueTeam = [tiger(position=[3,3]),
     #             anglerfish(position=[4,0]),hippo(position=[4,2]),
     #            bee(position=[5,2]),fireworm(position=[5,4])]
-    redTeam = [anglerfish(position = [0,4]),mantis(position = [1,1]),monoceros(position = [2,4]),octopus(position = [2,0])]
-    blueTeam = [heal_deer(position = [3,2]),ladybug(position = [4,1]),killer_whale(position = [4,4]),shark(position = [5,2])]
-
+    redTeam = [monkey(position = [2,2])]
+    blueTeam = [fireworm(position = [3,0]),fireworm(position = [3,1]),fireworm(position = [4,3]),fireworm(position = [5,4])]
 
     newBattle.addRedTeam(redTeam)
     newBattle.addBlueTeam(blueTeam)
