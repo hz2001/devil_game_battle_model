@@ -261,6 +261,8 @@ class chessInterface:
             currentTime (int): _description_
             coefficient (float, optional): _description_. Defaults to 1.0.
         """
+        if dist(opponent.position, self.position) > self.attack_range:
+            return 0
         self.attack_counter = 0
         if random.random() < opponent.evasion:
             print(currentTime/100, f" <{self}> 攻击了<{opponent}>,但是被闪避了。")
