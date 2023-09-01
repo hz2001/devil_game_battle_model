@@ -704,6 +704,7 @@ class ninjaJump(skillInterface):
                     best_location = [i,j]
                     best_intent = dest_intent[i][j]
         caster.position = best_location
+        
         print(f"{currentTime/100}   {caster}jump到了{best_location}")
         '''找到了______________________________________'''
         # raise Exception('看这里')
@@ -737,11 +738,11 @@ class monkey(chessInterface):
         super().__init__(chessName = "忍者猴",id=11,
                          race = "mammal",
                          star = 3,
-                         attack = 74,
-                         attack_interval=0.75, # 有可能太高
+                         attack = 79,
+                         attack_interval=0.7, 
                          attack_range = 3,
                          armor = 14,
-                         health= 288,
+                         health= 488,
                          skill = ninjaJump(74))
         self.skill = ninjaJump(baseAttack=self.attack)
         self.statusDict = {'moving': None,
@@ -1734,9 +1735,9 @@ class shark(chessInterface):
                          race = "marine",
                          star = 4,
                          attack = 80, # 有点低
-                         attack_interval=0.5,
+                         attack_interval=0.6,
                          attack_range = 1.5,
-                         armor = 42,
+                         armor = 39,
                          health= 1200,
                          skill = None)
         self.skill = abyssBite(baseAttack=self.attack)
@@ -1785,11 +1786,11 @@ class guardDevil(chessInterface):
         super().__init__(chessName = "鬼护卫", id = 101,
                          star = 2,
                          race = 'devil',
-                         attack = 54, 
+                         attack = 64, 
                          attack_interval = 1.1,
                          attack_range = 1.5, 
-                         armor = 24, 
-                         health = 562, 
+                         armor = 25, 
+                         health = 660, 
                          skill = None)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
@@ -1806,11 +1807,11 @@ class trollDevilMelee(chessInterface):
         super().__init__(chessName = "近战巨魔", id = 102,
                          star = 3,
                          race = 'devil',
-                         attack = 91, 
-                         attack_interval = 0.85,
+                         attack = 80, 
+                         attack_interval = 1,
                          attack_range = 1.5, 
-                         armor = 30, 
-                         health = 1200, 
+                         armor = 28, 
+                         health = 850, 
                          skill = None)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
@@ -1827,11 +1828,11 @@ class trollDevilRanged(chessInterface):
         super().__init__(chessName = "远程巨魔", id = 103,
                          star = 3,
                          race = 'devil',
-                         attack = 79, 
-                         attack_interval = 0.7,
+                         attack = 65, 
+                         attack_interval = 0.9,
                          attack_range = 2.5, 
-                         armor = 20, 
-                         health = 600, 
+                         armor = 17, 
+                         health = 500, 
                          skill = None)
         self.uniqueID = chessInterface.uniqueID + 1
         chessInterface.uniqueID += 1
@@ -1846,12 +1847,12 @@ class trollDevilRanged(chessInterface):
 class devil_food(skillInterface):
     def __init__(self,
                  skillName: str = "魔鬼食粮",
-                 cd: float = 1,
+                 cd: float = 5,
                  initialCD: float = 1,
                  type: str = "active",
-                 description: str = "只要技能释放者还活着，队友身上就一直会有buff",
+                 description: str = "3秒内，队友身上就一直会有buff",
                  enhanceRatio: float = 0.2,
-                 duration: float = 1) -> None:
+                 duration: float = 3) -> None:
         super().__init__(skillName, cd, initialCD, type, description)
         self.enhanceRatio = enhanceRatio
         self.duration = duration
