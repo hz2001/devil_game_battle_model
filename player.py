@@ -19,6 +19,7 @@ class Player:
         self.population = 1
         self.turnToNextPop = 1
         self.goldToNextPop = 1
+        self.goldForPopExp = 3
         self.cost2Chance = 0 # 抽到2星卡的概率
         self.hp = 100
         self.cardLock = False
@@ -46,7 +47,7 @@ class Player:
     def printStatus(self) -> None:
         print (f"\n" + \
             f"当前回合 {self.turn}, 剩余血量：{self.hp}\n" + \
-            f"{self} 现在拥有 {colored(self.population,'green')} 人口，距离下次升级还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者{colored(self.goldToNextPop*self.turnToNextPop,'light_cyan')}金钱；\n" + \
+            f"{self} 现在拥有 {colored(self.population,'green')} 人口，距离下次升级还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者{colored(self.goldForPopExp*self.turnToNextPop,'light_cyan')}金钱；\n" + \
             f"现在拥有的棋子为{self.chesses}\n" + \
             f"备战区棋子：{self.chessInHand}，上场棋子{[(c, c.position) for c in self.chessOnField]}；\n"+ \
             f"当前回合还有可用金钱{colored(self.goldAvail, 'yellow')}；\n" + \
@@ -80,17 +81,20 @@ class Player:
     def checkPopulationUpdate(self):
         """检查人口是否上升"""
         self.turnToNextPop -= 1
-        self.goldToNextPop -= self.population
-        if self.turnToNextPop == 0:
+        self.goldToNextPop = self.goldForPopExp * self.turnToNextPop
+        if self.goldToNextPop == 0:
             self.population += 1
-            self.turnToNextPop = deepcopy(self.population)
-            self.goldToNextPop = deepcopy(self.population) ** 2 # population 的平方
-            print(f"玩家{self.id} 现在拥有 {colored(self.population,'green')} 人口，升级至下一人口还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者 {colored(self.goldToNextPop*self.turnToNextPop,'light_cyan')} 金钱；\n")
+            # self.turnToNextPop = deepcopy(self.population)
+            # self.goldToNextPop = deepcopy(self.population) ** 2 # population 的平方
+            # 新的升级策略
+            self.turnToNextPop = 2
+            self.goldToNextPop = self.turnToNextPop * self.goldForPopExp
+            print(f"玩家{self.id} 现在拥有 {colored(self.population,'green')} 人口，升级至下一人口还需要{colored(self.turnToNextPop,'light_cyan')}回合，或者 {colored(self.goldToNextPop,'light_cyan')} 金钱；\n")
         
     # 人口部分
     def upgrade_pop(self):
         """用金币升级人口"""
-        if self.reduce_gold(purpose=f"升级人口", howMuch=self.population):
+        if self.reduce_gold(purpose=f"升级人口", howMuch=self.goldForPopExp):
             self.checkPopulationUpdate()
         
     # 棋子部分
@@ -409,7 +413,7 @@ class Player:
                     self.upgrade_chess(chessID = chessID)
                 case 7:
                     # 升级人口
-                    if self.goldAvail < self.population:
+                    if self.goldAvail < self.goldForPopExp:
                         print(f"当前金币为 {self.goldAvail}/{self.population}  不能进行升级人口操作.")
                         continue
                     try:
